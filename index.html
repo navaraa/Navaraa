@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navaraa DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #8247e5, #2b2f77);
+      color: #fff;
+      scroll-behavior: smooth;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(5px);
+    }
+    header h1 { margin: 0; font-size: 2.2em; }
+    main { padding: 80px 20px 100px 20px; }
+    .section {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 40px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      transition: transform .3s;
+    }
+    .section:hover { transform: translateY(-5px); }
+    h2 { border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+    button, input, select {
+      width: 100%; padding: 10px; margin-top: 10px;
+      border: none; border-radius: 10px; font-size: 1em;
+    }
+    button { background: #8247e5; color: #fff; cursor: pointer; transition: .3s; }
+    button:hover { background: #fff; color: #8247e5; }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 70px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
+      display: flex; justify-content: space-around; align-items: center;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    .bottom-nav a {
+      flex: 1; text-align: center; color: #fff;
+      text-decoration: none; font-size: .8em;
+    }
+    .bottom-nav a span { display:block; font-size:1.4em; margin-bottom:3px; }
+    .bottom-nav a:hover { color: #8247e5; }
+    footer { text-align:center; padding:15px; background:rgba(0,0,0,0.2); font-size:.9em; }
+    .referral-box { display:flex; gap:10px; align-items:center; }
+    .referral-box input { flex:1; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🚀 Navaraa</h1>
+    <button onclick="connectWallet()">🔗 Connect Wallet</button>
+    <p id="walletInfo">Not Connected</p>
+  </header>
+
+  <main>
+    <div class="section" id="home">
+      <h2>Welcome</h2>
+      <p>Navaraa: All-in-one Polygon DApp for Staking, SIP, Airdrops, Referrals & Swaps.</p>
+      <p><b>MATIC Balance:</b> <span id="maticBalance">0</span></p>
+      <p><b>Token Balance:</b> <span id="tokenBalance">0</span></p>
+    </div>
+
+    <div class="section" id="staking">
+      <h2>Staking</h2>
+      <input id="stakeAmount" type="number" placeholder="Enter amount to stake">
+      <button onclick="approveStake()">Approve</button>
+      <button onclick="stakeTokens()">Stake</button>
+      <button onclick="unstakeTokens()">Unstake</button>
+      <button onclick="claimRewards()">Claim Rewards</button>
+    </div>
+
+    <div class="section" id="swap">
+      <h2>Swap Tokens</h2>
+      <button onclick="window.open('https://quickswap.exchange','_blank')">QuickSwap</button>
+      <button onclick="window.open('https://app.1inch.io/','_blank')">1inch</button>
+      <button onclick="window.open('https://kyberswap.com/','_blank')">KyberSwap</button>
+      <button onclick="window.open('https://openocean.finance/','_blank')">OpenOcean</button>
+    </div>
+
+    <div class="section" id="sip">
+      <h2>SIP (Systematic Investment)</h2>
+      <select id="sipInterval">
+        <option>Daily</option><option>Weekly</option><option>Monthly</option>
+      </select>
+      <input id="sipAmount" type="number" placeholder="Amount per cycle">
+      <button onclick="startSIP()">Start SIP</button>
+      <canvas id="sipChart" height="150"></canvas>
+    </div>
+
+    <div class="section" id="airdrop">
+      <h2>Airdrop</h2>
+      <p>Claim your free tokens!</p>
+      <button onclick="claimAirdrop()">Claim Airdrop</button>
+    </div>
+
+    <div class="section" id="referral">
+      <h2>Referral</h2>
+      <div class="referral-box">
+        <input id="refLink" readonly>
+        <button onclick="copyReferral()">Copy</button>
+      </div>
+      <button onclick="generateReferral()">Generate Referral Link</button>
+    </div>
+
+    <div class="section" id="dashboard">
+      <h2>Dashboard</h2>
+      <div>
+        <p>Staked: <span id="stakedBalance">0</span></p>
+        <p>Rewards: <span id="rewardBalance">0</span></p>
+        <canvas id="dashboardChart" height="150"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <div class="bottom-nav">
+    <a href="#home"><span>🏠</span>Home</a>
+    <a href="#staking"><span>📈</span>Staking</a>
+    <a href="#swap"><span>🔄</span>Swap</a>
+    <a href="#sip"><span>💰</span>SIP</a>
+    <a href="#airdrop"><span>🎁</span>Airdrop</a>
+    <a href="#referral"><span>👥</span>Referral</a>
+    <a href="#dashboard"><span>📊</span>Dashboard</a>
+  </div>
+
+  <footer>
+    <p>Made with ❤️ for Polygon Blockchain | Navaraa</p>
+  </footer>
+
+  <script>
+    const CONFIG = {
+      TOKEN_ADDRESS: "0xYourTokenAddress",
+      TOKEN_SYMBOL: "NVR",
+      TOKEN_DECIMALS: 18,
+      STAKING_CONTRACT: "0xYourStakingContract"
+    };
+
+    async function connectWallet() {
+      if(window.ethereum){
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        document.getElementById('walletInfo').innerText = "Connected: " + accounts[0];
+        generateReferral(accounts[0]);
+      } else alert("Install MetaMask");
+    }
+    function approveStake(){ alert("Approve tx (placeholder)"); }
+    function stakeTokens(){ alert("Stake tx (placeholder)"); }
+    function unstakeTokens(){ alert("Unstake tx (placeholder)"); }
+    function claimRewards(){ alert("Claim tx (placeholder)"); }
+    function claimAirdrop(){ alert("Airdrop claimed (placeholder)"); }
+
+    function startSIP(){
+      let amt=document.getElementById('sipAmount').value||0;
+      let labels=[],data=[];
+      for(let i=1;i<=12;i++){ labels.push("Month "+i); data.push(amt*i); }
+      new Chart(document.getElementById('sipChart'), {
+        type:'line', data:{ labels:labels, datasets:[{label:'SIP Projection', data:data, borderColor:'#fff'}] },
+        options:{ plugins:{legend:{labels:{color:'#fff'}}}, scales:{x:{ticks:{color:'#fff'}}, y:{ticks:{color:'#fff'}}} }
+      });
+    }
+
+    function generateReferral(account){
+      const acc=account||"0x123...";
+      document.getElementById('refLink').value=window.location.origin+"/?ref="+acc;
+    }
+    function copyReferral(){
+      navigator.clipboard.writeText(document.getElementById('refLink').value);
+      alert("Referral link copied!");
+    }
+
+    new Chart(document.getElementById('dashboardChart'), {
+      type:'bar', data:{ labels:['Staked','Rewards'], datasets:[{ data:[0,0], backgroundColor:['#8247e5','#2b2f77'] }] },
+      options:{ plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#fff'}}, y:{ticks:{color:'#fff'}}} }
+    });
+  </script>
+</body>
+</html>
