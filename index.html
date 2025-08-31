@@ -1,134 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Navaraa DApp</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --bg: linear-gradient(135deg, #8247e5, #2b2f77);
+      --card-bg: rgba(255,255,255,0.08);
+      --text: #fff;
+      --accent: #8247e5;
+    }
+    body.light {
+      --bg: #f9f9f9;
+      --card-bg: #fff;
+      --text: #222;
+      --accent: #8247e5;
+    }
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #8247e5, #2b2f77);
-      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       scroll-behavior: smooth;
+      transition: all 0.3s ease;
     }
     header {
       padding: 20px;
       text-align: center;
-      background: rgba(0,0,0,0.2);
-      backdrop-filter: blur(5px);
+      background: rgba(0,0,0,0.3);
+      font-size: 1.6em;
+      font-weight: bold;
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    header h1 { margin: 0; font-size: 2.2em; }
-    main { padding: 80px 20px 100px 20px; }
-    .section {
-      background: rgba(255,255,255,0.08);
+    #themeToggle {
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: var(--text);
+    }
+    main {
+      padding: 80px 20px 100px;
+      min-height: calc(100vh - 150px);
+    }
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+    .page.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform: translateY(10px);}
+      to {opacity:1; transform: translateY(0);}
+    }
+    .card {
+      background: var(--card-bg);
       border-radius: 20px;
       padding: 20px;
-      margin-bottom: 40px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      transition: transform .3s;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
     }
-    .section:hover { transform: translateY(-5px); }
-    h2 { border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
-    button, input, select {
-      width: 100%; padding: 10px; margin-top: 10px;
-      border: none; border-radius: 10px; font-size: 1em;
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.3em;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 8px;
     }
-    button { background: #8247e5; color: #fff; cursor: pointer; transition: .3s; }
-    button:hover { background: #fff; color: #8247e5; }
+    body.light .card h2 {
+      border-bottom: 1px solid #ddd;
+    }
+    .card button, .card input, .card select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+    }
+    .card button {
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .card button:hover {
+      background: #fff;
+      color: var(--accent);
+    }
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: 70px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
-      display: flex; justify-content: space-around; align-items: center;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 70px;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
       border-top: 1px solid rgba(255,255,255,0.2);
+      z-index: 999;
+      transition: all 0.3s ease;
+    }
+    body.light .bottom-nav {
+      background: #fff;
+      border-top: 1px solid #ddd;
     }
     .bottom-nav a {
-      flex: 1; text-align: center; color: #fff;
-      text-decoration: none; font-size: .8em;
+      flex: 1;
+      text-align: center;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.8em;
+      transition: color 0.3s;
     }
-    .bottom-nav a span { display:block; font-size:1.4em; margin-bottom:3px; }
-    .bottom-nav a:hover { color: #8247e5; }
-    footer { text-align:center; padding:15px; background:rgba(0,0,0,0.2); font-size:.9em; }
-    .referral-box { display:flex; gap:10px; align-items:center; }
-    .referral-box input { flex:1; }
+    .bottom-nav a span {
+      display: block;
+      font-size: 1.4em;
+      margin-bottom: 3px;
+    }
+    .bottom-nav a.active {
+      color: var(--accent);
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: rgba(0,0,0,0.3);
+      font-size: 0.9em;
+    }
+    body.light footer {
+      background: #eee;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>🚀 Navaraa</h1>
-    <button onclick="connectWallet()">🔗 Connect Wallet</button>
-    <p id="walletInfo">Not Connected</p>
+    <span>🚀 Navaraa</span>
+    <button id="themeToggle"><i class="fa-solid fa-moon"></i></button>
   </header>
 
   <main>
-    <div class="section" id="home">
-      <h2>Welcome</h2>
-      <p>Navaraa: All-in-one Polygon DApp for Staking, SIP, Airdrops, Referrals & Swaps.</p>
-      <p><b>MATIC Balance:</b> <span id="maticBalance">0</span></p>
-      <p><b>Token Balance:</b> <span id="tokenBalance">0</span></p>
-    </div>
-
-    <div class="section" id="staking">
-      <h2>Staking</h2>
-      <input id="stakeAmount" type="number" placeholder="Enter amount to stake">
-      <button onclick="approveStake()">Approve</button>
-      <button onclick="stakeTokens()">Stake</button>
-      <button onclick="unstakeTokens()">Unstake</button>
-      <button onclick="claimRewards()">Claim Rewards</button>
-    </div>
-
-    <div class="section" id="swap">
-      <h2>Swap Tokens</h2>
-      <button onclick="window.open('https://quickswap.exchange','_blank')">QuickSwap</button>
-      <button onclick="window.open('https://app.1inch.io/','_blank')">1inch</button>
-      <button onclick="window.open('https://kyberswap.com/','_blank')">KyberSwap</button>
-      <button onclick="window.open('https://openocean.finance/','_blank')">OpenOcean</button>
-    </div>
-
-    <div class="section" id="sip">
-      <h2>SIP (Systematic Investment)</h2>
-      <select id="sipInterval">
-        <option>Daily</option><option>Weekly</option><option>Monthly</option>
-      </select>
-      <input id="sipAmount" type="number" placeholder="Amount per cycle">
-      <button onclick="startSIP()">Start SIP</button>
-      <canvas id="sipChart" height="150"></canvas>
-    </div>
-
-    <div class="section" id="airdrop">
-      <h2>Airdrop</h2>
-      <p>Claim your free tokens!</p>
-      <button onclick="claimAirdrop()">Claim Airdrop</button>
-    </div>
-
-    <div class="section" id="referral">
-      <h2>Referral</h2>
-      <div class="referral-box">
-        <input id="refLink" readonly>
-        <button onclick="copyReferral()">Copy</button>
+    <!-- Home Page -->
+    <section id="home" class="page active">
+      <div class="card">
+        <h2>Welcome to Navaraa</h2>
+        <p>Your all-in-one Polygon DApp for Staking, SIP, Airdrops, Referrals, and Swaps.</p>
       </div>
-      <button onclick="generateReferral()">Generate Referral Link</button>
-    </div>
+    </section>
 
-    <div class="section" id="dashboard">
-      <h2>Dashboard</h2>
-      <div>
-        <p>Staked: <span id="stakedBalance">0</span></p>
-        <p>Rewards: <span id="rewardBalance">0</span></p>
-        <canvas id="dashboardChart" height="150"></canvas>
+    <!-- Swap Page -->
+    <section id="swap" class="page">
+      <div class="card">
+        <h2>Token Swap</h2>
+        <input type="text" placeholder="From Token" />
+        <input type="text" placeholder="To Token" />
+        <input type="number" placeholder="Amount" />
+        <button>Swap</button>
       </div>
-    </div>
+    </section>
+
+    <!-- Earn Parent Page -->
+    <section id="earn" class="page">
+      <div class="card">
+        <h2>Earn with Navaraa</h2>
+        <p>Select an option below to start earning.</p>
+      </div>
+    </section>
+
+    <!-- Staking Subpage -->
+    <section id="staking" class="page">
+      <div class="card">
+        <h2>Staking</h2>
+        <input type="number" placeholder="Enter amount to stake" />
+        <button>Stake Tokens</button>
+      </div>
+    </section>
+
+    <!-- Referral Subpage -->
+    <section id="referral" class="page">
+      <div class="card">
+        <h2>Refer & Earn</h2>
+        <p>Invite friends and earn rewards.</p>
+        <button>Copy Referral Link</button>
+      </div>
+    </section>
+
+    <!-- Airdrop Subpage -->
+    <section id="airdrop" class="page">
+      <div class="card">
+        <h2>Airdrop</h2>
+        <p>Claim free tokens during events.</p>
+        <button>Claim Airdrop</button>
+      </div>
+    </section>
+
+    <!-- SIP Subpage -->
+    <section id="sip" class="page">
+      <div class="card">
+        <h2>SIP (Systematic Investment)</h2>
+        <select>
+          <option>Daily</option>
+          <option>Weekly</option>
+          <option>Monthly</option>
+        </select>
+        <input type="number" placeholder="Amount per cycle" />
+        <button>Start SIP</button>
+      </div>
+    </section>
   </main>
 
-  <div class="bottom-nav">
-    <a href="#home"><span>🏠</span>Home</a>
-    <a href="#staking"><span>📈</span>Staking</a>
-    <a href="#swap"><span>🔄</span>Swap</a>
-    <a href="#sip"><span>💰</span>SIP</a>
-    <a href="#airdrop"><span>🎁</span>Airdrop</a>
-    <a href="#referral"><span>👥</span>Referral</a>
-    <a href="#dashboard"><span>📊</span>Dashboard</a>
+  <!-- Main Bottom Nav -->
+  <div id="main-nav" class="bottom-nav">
+    <a href="#home" data-target="home" class="active"><span><i class="fa-solid fa-house"></i></span>Home</a>
+    <a href="#swap" data-target="swap"><span><i class="fa-solid fa-arrows-rotate"></i></span>Swap</a>
+    <a href="#earn" data-target="earn"><span><i class="fa-solid fa-briefcase"></i></span>Earn</a>
+  </div>
+
+  <!-- Earn Sub Nav -->
+  <div id="earn-nav" class="bottom-nav" style="display:none;">
+    <a href="#staking" data-target="staking"><span><i class="fa-solid fa-chart-line"></i></span>Staking</a>
+    <a href="#referral" data-target="referral"><span><i class="fa-solid fa-user-group"></i></span>Refer</a>
+    <a href="#airdrop" data-target="airdrop"><span><i class="fa-solid fa-gift"></i></span>Airdrop</a>
+    <a href="#sip" data-target="sip"><span><i class="fa-solid fa-coins"></i></span>SIP</a>
   </div>
 
   <footer>
@@ -136,48 +235,46 @@
   </footer>
 
   <script>
-    const CONFIG = {
-      TOKEN_ADDRESS: "0xYourTokenAddress",
-      TOKEN_SYMBOL: "NVR",
-      TOKEN_DECIMALS: 18,
-      STAKING_CONTRACT: "0xYourStakingContract"
-    };
+    const pages = document.querySelectorAll('.page');
+    const mainNav = document.getElementById('main-nav');
+    const earnNav = document.getElementById('earn-nav');
+    const themeToggle = document.getElementById('themeToggle');
+    let darkMode = true;
 
-    async function connectWallet() {
-      if(window.ethereum){
-        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-        document.getElementById('walletInfo').innerText = "Connected: " + accounts[0];
-        generateReferral(accounts[0]);
-      } else alert("Install MetaMask");
+    function showPage(id){
+      pages.forEach(p=>p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if(id==='staking'||id==='referral'||id==='airdrop'||id==='sip'){
+        mainNav.style.display='none';
+        earnNav.style.display='flex';
+      } else if(id==='earn'){
+        mainNav.style.display='none';
+        earnNav.style.display='flex';
+      } else {
+        mainNav.style.display='flex';
+        earnNav.style.display='none';
+      }
+      document.querySelectorAll('.bottom-nav a').forEach(a=>a.classList.remove('active'));
+      document.querySelectorAll(`[data-target="${id}"]`).forEach(a=>a.classList.add('active'));
     }
-    function approveStake(){ alert("Approve tx (placeholder)"); }
-    function stakeTokens(){ alert("Stake tx (placeholder)"); }
-    function unstakeTokens(){ alert("Unstake tx (placeholder)"); }
-    function claimRewards(){ alert("Claim tx (placeholder)"); }
-    function claimAirdrop(){ alert("Airdrop claimed (placeholder)"); }
 
-    function startSIP(){
-      let amt=document.getElementById('sipAmount').value||0;
-      let labels=[],data=[];
-      for(let i=1;i<=12;i++){ labels.push("Month "+i); data.push(amt*i); }
-      new Chart(document.getElementById('sipChart'), {
-        type:'line', data:{ labels:labels, datasets:[{label:'SIP Projection', data:data, borderColor:'#fff'}] },
-        options:{ plugins:{legend:{labels:{color:'#fff'}}}, scales:{x:{ticks:{color:'#fff'}}, y:{ticks:{color:'#fff'}}} }
+    document.querySelectorAll('.bottom-nav a').forEach(link=>{
+      link.addEventListener('click', e=>{
+        e.preventDefault();
+        const target = link.getAttribute('data-target');
+        showPage(target);
       });
-    }
+    });
 
-    function generateReferral(account){
-      const acc=account||"0x123...";
-      document.getElementById('refLink').value=window.location.origin+"/?ref="+acc;
-    }
-    function copyReferral(){
-      navigator.clipboard.writeText(document.getElementById('refLink').value);
-      alert("Referral link copied!");
-    }
-
-    new Chart(document.getElementById('dashboardChart'), {
-      type:'bar', data:{ labels:['Staked','Rewards'], datasets:[{ data:[0,0], backgroundColor:['#8247e5','#2b2f77'] }] },
-      options:{ plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#fff'}}, y:{ticks:{color:'#fff'}}} }
+    themeToggle.addEventListener('click', ()=>{
+      darkMode = !darkMode;
+      if(darkMode){
+        document.body.classList.remove('light');
+        themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+      } else {
+        document.body.classList.add('light');
+        themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+      }
     });
   </script>
 </body>
