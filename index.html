@@ -4,146 +4,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Navaraa DApp</title>
+  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font (Polygon style: Roboto) -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: linear-gradient(135deg, #8247e5, #2b2f77);
-      --card-bg: rgba(255,255,255,0.08);
-      --text: #fff;
-      --accent: #8247e5;
-    }
-    body.light {
-      --bg: #f9f9f9;
-      --card-bg: #fff;
+      --accent: #8247e5; /* Polygon purple */
+      --accent-dark: #2b2f77; /* Polygon dark blue */
+      --bg: #fff;
       --text: #222;
-      --accent: #8247e5;
     }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Roboto', sans-serif;
       background: var(--bg);
       color: var(--text);
       scroll-behavior: smooth;
-      transition: all 0.3s ease;
     }
     header {
-      padding: 20px;
-      text-align: center;
-      background: rgba(0,0,0,0.3);
-      font-size: 1.6em;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color: #fff;
+      font-size: 1.4em;
       font-weight: bold;
-      letter-spacing: 1px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    #themeToggle {
-      background: none;
-      border: none;
-      font-size: 1.2em;
+      text-align: center;
       cursor: pointer;
-      color: var(--text);
     }
     main {
-      padding: 80px 20px 100px;
-      min-height: calc(100vh - 150px);
+      padding: 70px 15px 80px;
+      min-height: calc(100vh - 130px);
     }
     .page {
       display: none;
-      animation: fadeIn 0.4s ease-in-out;
+      animation: slideIn 0.4s ease-in-out;
     }
     .page.active {
       display: block;
     }
-    @keyframes fadeIn {
-      from {opacity:0; transform: translateY(10px);}
-      to {opacity:1; transform: translateY(0);}
+    @keyframes slideIn {
+      from {opacity:0; transform: translateX(20px);}
+      to {opacity:1; transform: translateX(0);}
     }
     .card {
-      background: var(--card-bg);
-      border-radius: 20px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 16px;
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     .card h2 {
       margin-top: 0;
-      font-size: 1.3em;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      padding-bottom: 8px;
-    }
-    body.light .card h2 {
-      border-bottom: 1px solid #ddd;
+      font-size: 1.2em;
+      color: var(--accent);
     }
     .card button, .card input, .card select {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      border: none;
-      border-radius: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
       font-size: 1em;
     }
     .card button {
       background: var(--accent);
       color: #fff;
+      border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      font-weight: 500;
+      transition: 0.2s;
     }
     .card button:hover {
-      background: #fff;
-      color: var(--accent);
+      background: var(--accent-dark);
     }
     .bottom-nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      height: 70px;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(10px);
+      height: 55px; /* reduced height */
+      background: #fff;
+      border-top: 1px solid #ddd;
       display: flex;
       justify-content: space-around;
       align-items: center;
-      border-top: 1px solid rgba(255,255,255,0.2);
       z-index: 999;
-      transition: all 0.3s ease;
-    }
-    body.light .bottom-nav {
-      background: #fff;
-      border-top: 1px solid #ddd;
     }
     .bottom-nav a {
       flex: 1;
       text-align: center;
-      color: var(--text);
+      color: #555;
       text-decoration: none;
-      font-size: 0.8em;
-      transition: color 0.3s;
+      font-size: 0.75em;
     }
     .bottom-nav a span {
       display: block;
-      font-size: 1.4em;
-      margin-bottom: 3px;
+      font-size: 1.3em;
+      margin-bottom: 2px;
     }
     .bottom-nav a.active {
       color: var(--accent);
-      font-weight: bold;
+      font-weight: 600;
     }
     footer {
       text-align: center;
-      padding: 15px;
-      background: rgba(0,0,0,0.3);
-      font-size: 0.9em;
-    }
-    body.light footer {
-      background: #eee;
+      padding: 10px;
+      font-size: 0.8em;
+      background: #f5f5f5;
     }
   </style>
 </head>
 <body>
-  <header>
-    <span>🚀 Navaraa</span>
-    <button id="themeToggle"><i class="fa-solid fa-moon"></i></button>
-  </header>
+  <!-- Header (clickable logo returns to Home) -->
+  <header id="logo">🚀 Navaraa</header>
 
   <main>
     <!-- Home Page -->
@@ -238,12 +210,14 @@
     const pages = document.querySelectorAll('.page');
     const mainNav = document.getElementById('main-nav');
     const earnNav = document.getElementById('earn-nav');
-    const themeToggle = document.getElementById('themeToggle');
-    let darkMode = true;
+    const logo = document.getElementById('logo');
 
+    // Function to show a page
     function showPage(id){
       pages.forEach(p=>p.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+
+      // Switch navbars
       if(id==='staking'||id==='referral'||id==='airdrop'||id==='sip'){
         mainNav.style.display='none';
         earnNav.style.display='flex';
@@ -254,10 +228,13 @@
         mainNav.style.display='flex';
         earnNav.style.display='none';
       }
+
+      // Active link highlight
       document.querySelectorAll('.bottom-nav a').forEach(a=>a.classList.remove('active'));
       document.querySelectorAll(`[data-target="${id}"]`).forEach(a=>a.classList.add('active'));
     }
 
+    // Navbar click
     document.querySelectorAll('.bottom-nav a').forEach(link=>{
       link.addEventListener('click', e=>{
         e.preventDefault();
@@ -266,15 +243,14 @@
       });
     });
 
-    themeToggle.addEventListener('click', ()=>{
-      darkMode = !darkMode;
-      if(darkMode){
-        document.body.classList.remove('light');
-        themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
-      } else {
-        document.body.classList.add('light');
-        themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
-      }
+    // Logo click always goes to Home
+    logo.addEventListener('click', ()=>{
+      showPage('home');
+    });
+
+    // Back button logic
+    window.addEventListener('popstate', ()=>{
+      showPage('home');
     });
   </script>
 </body>
