@@ -4,14 +4,90 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Navaraa DApp</title>
-  <!-- CSS file link -->
+  <link rel="icon" href="https://cryptologos.cc/logos/polygon-matic-logo.png">
   <link rel="stylesheet" href="style.css">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 </head>
 <body>
-  <h1>Welcome to Navaraa</h1>
-  <button onclick="connectWallet()">Connect Wallet</button>
+  <!-- Header -->
+  <header>
+    <div class="menu-icon" id="menuBtn"><i class="ri-menu-3-line"></i></div>
+    <h1 class="logo"><img src="https://cryptologos.cc/logos/polygon-matic-logo.png" width="24"> Navaraa</h1>
+    <button class="btn" id="connectBtn">Connect</button>
+  </header>
 
-  <!-- JS file link -->
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="close-btn" id="closeSidebar"><i class="ri-close-line"></i></div>
+    <ul>
+      <li data-page="home">🏠 Home</li>
+      <li>📄 White Paper</li>
+      <li data-page="about">ℹ️ About</li>
+      <li data-page="project">🚀 Project</li>
+      <li data-page="tokenomics">📊 Tokenomics</li>
+      <li data-page="earn">💰 Stake Now</li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Home Page -->
+    <section id="home" class="page active">
+      <h2>Welcome to Navaraa</h2>
+      <button class="btn">White Paper</button>
+
+      <h3>Token Contract Address</h3>
+      <div class="contract-box">
+        <span id="contractAddress">0x1234567890abcdef1234567890abcdef12345678</span>
+        <i class="ri-file-copy-line" id="copyBtn"></i>
+      </div>
+
+      <h3>About Us</h3>
+      <p>Lorem ipsum dummy text for about section...</p>
+
+      <h3>Project</h3>
+      <div class="slider">
+        <div>Slide 1</div>
+        <div>Slide 2</div>
+        <div>Slide 3</div>
+        <div>Slide 4</div>
+        <div>Slide 5</div>
+      </div>
+
+      <h3>Tokenomics</h3>
+      <p>Dummy tokenomics info...</p>
+    </section>
+
+    <!-- Swap Page -->
+    <section id="swap" class="page">
+      <header class="sub-header">
+        <h2><img src="https://cryptologos.cc/logos/polygon-matic-logo.png" width="20"> Navaraa</h2>
+        <button class="btn" id="connectBtn2">Connect</button>
+      </header>
+      <p>Swap feature coming soon...</p>
+    </section>
+
+    <!-- Earn Page -->
+    <section id="earn" class="page">
+      <header class="sub-header">
+        <h2><img src="https://cryptologos.cc/logos/polygon-matic-logo.png" width="20"> Navaraa</h2>
+        <button class="btn">Refer Now</button>
+      </header>
+      <p>Stake, referral, SIP and airdrop features...</p>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-item active" data-page="home"><i class="ri-home-5-fill"></i>Home</div>
+    <div class="nav-item" data-page="swap"><i class="ri-exchange-dollar-fill"></i>Swap</div>
+    <div class="nav-item" data-page="earn"><i class="ri-coins-fill"></i>Earn</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.7.8/dist/umd/index.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
