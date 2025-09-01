@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Navaraa DApp</title>
   <link rel="icon" href="https://cryptologos.cc/logos/polygon-matic-logo.png" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -22,7 +26,7 @@
       align-items: center;
       background: rgba(0,0,0,0.5);
     }
-    header h1 { margin: 0; font-size: 20px; }
+    header h1 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 5px; }
     .btn {
       padding: 8px 15px;
       border: none;
@@ -31,7 +35,9 @@
       background: #8247e5;
       color: white;
       font-weight: bold;
+      transition: 0.3s;
     }
+    .btn:hover { background: #5b2fbf; }
     main {
       flex: 1;
       padding: 20px;
@@ -53,6 +59,11 @@
       color: #aaa;
       font-size: 14px;
     }
+    .nav-item i {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 3px;
+    }
     .nav-item.active { color: #fff; }
     .card {
       background: rgba(130,71,229,0.15);
@@ -61,11 +72,19 @@
       margin: 15px 0;
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
     }
+    .info {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      font-size: 14px;
+      word-break: break-word;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>🌐 Navaraa</h1>
+    <h1><img src="https://cryptologos.cc/logos/polygon-matic-logo.png" width="24"/> Navaraa</h1>
     <button class="btn" id="connectBtn">Connect</button>
   </header>
 
@@ -75,6 +94,7 @@
       <h2>Welcome to Navaraa</h2>
       <p>Your gateway to Staking, Referral, SIP, Airdrop & Swap</p>
       <div class="card"><h3>About</h3><p>Navaraa is a next-gen crypto ecosystem.</p></div>
+      <div id="walletInfo" class="info" style="display:none;"></div>
     </div>
 
     <!-- Swap Page -->
@@ -96,9 +116,9 @@
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
-    <div class="nav-item active" data-page="home">🏠<br>Home</div>
-    <div class="nav-item" data-page="swap">🔄<br>Swap</div>
-    <div class="nav-item" data-page="earn">💰<br>Earn</div>
+    <div class="nav-item active" data-page="home"><i class="ri-home-5-fill"></i>Home</div>
+    <div class="nav-item" data-page="swap"><i class="ri-exchange-dollar-fill"></i>Swap</div>
+    <div class="nav-item" data-page="earn"><i class="ri-coins-fill"></i>Earn</div>
   </div>
 
   <!-- Scripts -->
@@ -107,30 +127,44 @@
 
   <script>
     const connectBtn = document.getElementById("connectBtn");
+    const walletInfo = document.getElementById("walletInfo");
     let provider, signer, userAddress;
 
     async function connectWallet() {
-      if (window.ethereum) {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
+      try {
+        if (window.ethereum) {
+          provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+          await provider.send("eth_requestAccounts", []);
+        } else {
+          const wcProvider = new WalletConnectProvider.default({
+            rpc: { 137: "https://polygon-rpc.com/" },
+            chainId: 137
+          });
+          await wcProvider.enable();
+          provider = new ethers.providers.Web3Provider(wcProvider);
+        }
+
         let network = await provider.getNetwork();
         if (network.chainId !== 137) {
           alert("Please switch to Polygon Network!");
           return;
         }
+
         signer = provider.getSigner();
         userAddress = await signer.getAddress();
+        let balance = await provider.getBalance(userAddress);
+        balance = ethers.utils.formatEther(balance);
+
         connectBtn.innerText = "Disconnect";
-      } else {
-        const wcProvider = new WalletConnectProvider.default({
-          rpc: { 137: "https://polygon-rpc.com/" },
-          chainId: 137
-        });
-        await wcProvider.enable();
-        provider = new ethers.providers.Web3Provider(wcProvider);
-        signer = provider.getSigner();
-        userAddress = await signer.getAddress();
-        connectBtn.innerText = "Disconnect";
+        walletInfo.style.display = "block";
+        walletInfo.innerHTML = `
+          <b>Address:</b> ${userAddress}<br>
+          <b>Balance:</b> ${parseFloat(balance).toFixed(4)} MATIC<br>
+          <b>Network:</b> Polygon
+        `;
+      } catch (err) {
+        console.error(err);
+        alert("Wallet connection failed!");
       }
     }
 
@@ -139,6 +173,7 @@
       signer = null;
       userAddress = null;
       connectBtn.innerText = "Connect";
+      walletInfo.style.display = "none";
     }
 
     connectBtn.addEventListener("click", () => {
