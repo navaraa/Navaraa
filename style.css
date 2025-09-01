@@ -1,1 +1,94 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0d0d0d, #1a0033, #0d0d0d);
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header, .sub-header {
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.5);
+}
+
+.logo { display: flex; align-items: center; gap: 5px; }
+.btn {
+  background: #8247e5;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn:hover { background: #5b2fbf; }
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+.page { display: none; }
+.page.active { display: block; }
+
+/* Sidebar */
+#sidebar {
+  position: fixed;
+  top: 0; left: -250px;
+  width: 250px;
+  height: 100%;
+  background: #111;
+  transition: 0.3s;
+  padding: 20px;
+  z-index: 1000;
+}
+#sidebar ul { list-style: none; padding: 0; }
+#sidebar ul li { margin: 15px 0; cursor: pointer; }
+#sidebar.active { left: 0; }
+.close-btn { text-align: right; cursor: pointer; font-size: 22px; }
+
+/* Contract Box */
+.contract-box {
+  background: rgba(255,255,255,0.1);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0,0,0,0.7);
+  padding: 8px 0;
+  border-top: 1px solid #333;
+  position: fixed;
+  bottom: 0; left: 0;
+  width: 100%;
+}
+.nav-item {
+  flex: 1; text-align: center; font-size: 13px;
+  cursor: pointer; color: #aaa;
+}
+.nav-item.active { color: white; }
+.nav-item i { display: block; font-size: 20px; margin-bottom: 3px; }
+
+/* Slider */
+.slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+}
+.slider div {
+  min-width: 150px;
+  background: rgba(130,71,229,0.2);
+  padding: 10px;
+  border-radius: 8px;
+}
 
