@@ -38,18 +38,55 @@ main {
 /* Sidebar */
 #sidebar {
   position: fixed;
-  top: 0; left: -250px;
-  width: 250px;
+  top: 0; left: -260px;
+  width: 260px;
   height: 100%;
-  background: #111;
-  transition: 0.3s;
-  padding: 20px;
+  background: linear-gradient(180deg, #1a0033, #0d0d0d);
+  box-shadow: 2px 0 15px rgba(0,0,0,0.7);
+  transition: 0.4s ease;
+  padding: 20px 15px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
-#sidebar ul { list-style: none; padding: 0; }
-#sidebar ul li { margin: 15px 0; cursor: pointer; }
-#sidebar.active { left: 0; }
-.close-btn { text-align: right; cursor: pointer; font-size: 22px; }
+
+#sidebar.active {
+  left: 0;
+}
+
+#sidebar .close-btn {
+  text-align: right;
+  cursor: pointer;
+  font-size: 24px;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+
+#sidebar ul li {
+  margin: 15px 0;
+  font-size: 16px;
+  color: #ccc;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+#sidebar ul li:hover {
+  background: rgba(130,71,229,0.3);
+  color: #fff;
+  transform: translateX(5px);
+}
 
 /* Contract Box */
 .contract-box {
