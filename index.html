@@ -1,1 +1,306 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Navaraa (Navaa) — DApp</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.9.0/dist/web3.min.js"></script>
+  <style>
+    :root{
+      --bg1:#0f1724; --bg2:#12263b; --card: rgba(255,255,255,0.04);
+      --accent:#06b6d4; --accent-2:#00ffa3;
+      color-scheme: dark;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:#e6eef7; -webkit-font-smoothing:antialiased;
+    }
+    .wrap{max-width:1100px;margin:28px auto;padding:18px;}
+    header{display:flex;align-items:center;justify-content:space-between}
+    h1{margin:0;font-size:22px}
+    .card{background:var(--card); border-radius:12px;padding:14px;margin-top:14px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .col{flex:1 1 300px;min-width:260px}
+    button{background:linear-gradient(90deg,var(--accent),#0077ff);border:none;color:#022; padding:10px 12px;border-radius:8px;font-weight:600;cursor:pointer}
+    input, select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+    small{opacity:0.8}
+    .muted{opacity:0.7;font-size:13px}
+    .owner{border:2px solid rgba(0,255,163,0.08);padding:12px}
+    pre{white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,0.15);padding:10px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Navaraa (Navaa) — Web3 DApp</h1>
+      <div>
+        <button id="connectBtn">Connect Wallet</button>
+        <span id="addr" class="muted" style="margin-left:12px">Not connected</span>
+      </div>
+    </header>
+
+    <!-- Token Overview -->
+    <section class="card">
+      <div class="row">
+        <div class="col">
+          <h3>Token Overview</h3>
+          <p><strong id="tokName">Navaraa</strong> — <span id="tokSymbol">Navaa</span></p>
+          <p class="muted">Decimals: <span id="tokDecimals">18</span></p>
+          <p><strong>Supply:</strong> <span id="supply">—</span></p>
+          <p><strong>Total Burned:</strong> <span id="burned">—</span></p>
+        </div>
+        <div class="col">
+          <h3>Your Balance</h3>
+          <p><strong id="balance">—</strong></p>
+          <p class="muted">Use the buttons below to interact with the token contract.</p>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="refreshBtn">Refresh</button>
+            <button id="smallTxTest">Send 0.0001 token test</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transfer -->
+    <section class="card">
+      <h3>Transfer Token</h3>
+      <div class="row">
+        <div class="col">
+          <input id="toAddr" placeholder="Recipient address (0x...)" />
+        </div>
+        <div style="width:160px">
+          <input id="toAmt" placeholder="Amount" />
+        </div>
+        <div style="width:140px">
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+      <p class="muted">Note: transfers trigger burn automatically (unless exempt).</p>
+    </section>
+
+    <!-- Staking (plug & play) -->
+    <section class="card">
+      <h3>Staking (plug-in)</h3>
+      <div class="row">
+        <div class="col">
+          <input id="stakingAddress" placeholder="Staking contract address (paste if deployed)" />
+          <small class="muted">This UI calls common stake/withdraw/claim methods if your staking contract follows standard names.</small>
+        </div>
+        <div style="width:140px">
+          <input id="stakeAmt" placeholder="Amount to stake" />
+        </div>
+        <div style="width:140px">
+          <button id="stakeBtn">Stake</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px" class="row">
+        <div class="col">
+          <input id="withdrawAmt" placeholder="Amount to withdraw" />
+        </div>
+        <div style="width:120px">
+          <button id="withdrawBtn">Withdraw</button>
+        </div>
+        <div style="width:120px">
+          <button id="claimBtn">Claim Rewards</button>
+        </div>
+      </div>
+
+      <p class="muted">If you will use a custom staking contract, set its address above. The UI expects staking functions: <code>stake(uint256,address)</code> or <code>stake(uint256)</code>, <code>withdraw(uint256)</code>, <code>claimReward()</code> or <code>claim()</code>. If the ABI differs, use direct contract calls via developer console.</p>
+    </section>
+
+    <!-- Referral -->
+    <section class="card">
+      <h3>Referral (off-chain helper)</h3>
+      <div class="row">
+        <div class="col">
+          <p>Create your referral link — other users who open the DApp with that link are recorded locally.</p>
+          <input id="createRefCode" placeholder="Your referral code (optional)" />
+          <button id="genRefBtn">Generate Referral Link</button>
+          <p class="muted">Referral link stored in localStorage — owner can distribute rewards later using Airdrop tool.</p>
+          <pre id="refLink"></pre>
+        </div>
+        <div class="col">
+          <p>Have a referral link? Enter referrer address below to register.</p>
+          <input id="registerRef" placeholder="Referrer address" />
+          <button id="regRefBtn">Register Referrer</button>
+          <p class="muted">The app stores your registered referrer locally so owner can track and reward.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Airdrop / Batch Payout (owner) -->
+    <section class="card owner" id="airdropCard" style="display:none;">
+      <h3>Owner — Airdrop & Batch Payout</h3>
+
+      <p class="muted">Paste CSV (address,amount) or JSON array: <code>[{"address":"0x...", "amount":"1.5"}, ...]</code></p>
+      <textarea id="batchData" rows="6" placeholder='Paste CSV or JSON here'></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="batchChunk" type="number" placeholder="Chunk size (e.g. 20)" value="20" style="width:140px" />
+        <button id="previewBatch">Preview</button>
+        <button id="execBatch">Execute Batch Transfers</button>
+      </div>
+      <div id="batchPreview" style="margin-top:10px"></div>
+
+      <hr>
+      <h4>Owner — Referral Rewards Distribution</h4>
+      <p class="muted">Use stored referrals or paste a list. The DApp does batch token transfers from owner wallet.</p>
+      <button id="loadReferrals">Load Registered Referrals (from localStorage)</button>
+      <div id="refPreview"></div>
+      <button id="execRefPayout" style="margin-top:8px">Payout Referral Rewards (batch)</button>
+    </section>
+
+    <!-- SIP -->
+    <section class="card">
+      <h3>Simple SIP (Opt-in)</h3>
+      <p class="muted">Users can opt-in to SIP (amount + period). This stores choice locally and owner can execute bulk SIP transfers periodically.</p>
+      <div class="row">
+        <div class="col"><input id="sipAmount" placeholder="Amount per period" /></div>
+        <div class="col" style="max-width:200px"><select id="sipPeriod"><option value="7">Weekly</option><option value="30">Monthly</option></select></div>
+        <div style="width:160px"><button id="subscribeSip">Opt-in to SIP</button></div>
+      </div>
+      <div id="sipPreview"></div>
+    </section>
+
+    <!-- Owner Controls (top) -->
+    <section class="card owner" id="ownerControls" style="display:none;">
+      <h3>Owner Controls</h3>
+      <div class="row">
+        <div class="col"><button id="pauseBtn">Pause</button></div>
+        <div class="col"><button id="unpauseBtn">Unpause</button></div>
+        <div class="col">
+          <input id="exAddr" placeholder="Set burn exempt address" />
+          <select id="exFlag"><option value="true">Exempt</option><option value="false">Not Exempt</option></select>
+          <button id="setExBtn">Set Exempt</button>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <input id="burnNum" placeholder="burn numerator" style="width:140px" />
+        <input id="burnDen" placeholder="burn denominator" style="width:140px" />
+        <button id="setBurnBtn">Set Burn Rate</button>
+      </div>
+    </section>
+
+    <footer style="margin-top:18px;color:#9fb7c9;font-size:13px">
+      <div>Contract: <a href="https://polygonscan.com/address/0x23b7a4c2ec9d742b5b1698149e812ca1e10d3e73" target="_blank" style="color:#8ee9ff">0x23b7...3e73</a></div>
+      <div style="margin-top:6px">Built for Navaraa — Manage referrals, airdrops, staking integration & SIP from one dashboard.</div>
+    </footer>
+  </div>
+
+<script>
+/* ===========================
+   Replace ABI below with the full ABI JSON string you gave.
+   I have included your ABI into tokenAbi variable automatically.
+   =========================== */
+const tokenAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":false,"internalType":"bool","name":"isExempt","type":"bool"}],"name":"BurnExemptSet","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"numerator","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"denominator","type":"uint256"}],"name":"BurnRateUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Burned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"inputs":[{"internalType":"address","name":"owner_","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isBurnExempt","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueMatic","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"tokenAddress","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"rescueTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"bool","name":"exempt","type":"bool"}],"name":"setBurnExempt","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"numerator","type":"uint256"},{"internalType":"uint256","name":"denominator","type":"uint256"}],"name":"setTransferBurnRate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"totalBurned","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"transferBurnDenominator","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"transferBurnNumerator","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+
+const tokenAddress = "0x23b7a4c2ec9d742b5b1698149e812ca1e10d3e73";
+
+let web3, account, tokenContract;
+
+async function connect() {
+  if (!window.ethereum) { alert("MetaMask/Wallet not found"); return; }
+  await window.ethereum.request({ method: 'eth_requestAccounts' });
+  web3 = new Web3(window.ethereum);
+  const accounts = await web3.eth.getAccounts();
+  account = accounts[0];
+  document.getElementById('addr').innerText = account;
+  tokenContract = new web3.eth.Contract(tokenAbi, tokenAddress);
+  await loadTokenInfo();
+  // show owner sections if owner
+  const owner = await tokenContract.methods.owner().call();
+  if (owner.toLowerCase() === account.toLowerCase()) {
+    document.getElementById('ownerSection').style.display = 'block';
+    document.getElementById('airdropCard').style.display = 'block';
+    document.getElementById('ownerControls').style.display = 'block';
+  }
+}
+
+async function loadTokenInfo() {
+  try {
+    const name = await tokenContract.methods.name().call();
+    const sym = await tokenContract.methods.symbol().call();
+    const dec = await tokenContract.methods.decimals().call();
+    const supply = await tokenContract.methods.totalSupply().call();
+    const burned = await tokenContract.methods.totalBurned().call();
+    document.getElementById('tokName').innerText = name;
+    document.getElementById('tokSymbol').innerText = sym;
+    document.getElementById('tokDecimals').innerText = dec;
+    document.getElementById('supply').innerText = formatToken(supply, dec);
+    document.getElementById('burned').innerText = formatToken(burned, dec);
+    if (account) {
+      const bal = await tokenContract.methods.balanceOf(account).call();
+      document.getElementById('balance').innerText = formatToken(bal, dec);
+    }
+  } catch (e) {
+    console.error(e);
+    alert('Load token info failed: ' + (e.message || e));
+  }
+}
+
+function formatToken(amount, decimals=18) {
+  try {
+    return (Number(amount) / (10 ** decimals)).toLocaleString('en-US', {maximumFractionDigits: 18});
+  } catch {
+    // fallback:
+    return amount.toString();
+  }
+}
+
+/* ---------- Transfer ---------- */
+document.getElementById('connectBtn').onclick = connect;
+document.getElementById('refreshBtn').onclick = async()=>{ if (!tokenContract) return alert('connect first'); await loadTokenInfo(); alert('Refreshed'); };
+document.getElementById('sendBtn').onclick = async()=>{
+  try {
+    if (!tokenContract) return alert('Connect wallet first');
+    const to = document.getElementById('toAddr').value.trim();
+    const amt = document.getElementById('toAmt').value.trim();
+    if (!web3.utils.isAddress(to)) return alert('Invalid address');
+    if (!amt || isNaN(amt)) return alert('Invalid amount');
+    const dec = await tokenContract.methods.decimals().call();
+    const wei = web3.utils.toBN(Math.floor(parseFloat(amt) * (10**dec)));
+    await tokenContract.methods.transfer(to, wei.toString()).send({ from: account });
+    alert('Transfer success');
+    loadTokenInfo();
+  } catch (e) { console.error(e); alert('Transfer error: ' + (e.message||e)); }
+};
+
+/* ---------- Small test tx ---------- */
+document.getElementById('smallTxTest').onclick = async ()=>{
+  try {
+    if (!tokenContract) return alert('Connect wallet first');
+    const dec = await tokenContract.methods.decimals().call();
+    const amt = web3.utils.toBN(1); // 1 wei (very tiny)
+    await tokenContract.methods.transfer(account, amt.toString()).send({ from: account });
+    alert('Sent tiny tx to self (test).');
+  } catch (e) { console.error(e); alert('Error: ' + (e.message||e)); }
+};
+
+/* ---------- Staking (flexible) ---------- */
+async function getStakingContract() {
+  const addr = document.getElementById('stakingAddress').value.trim();
+  if (!web3.utils.isAddress(addr)) { alert('Enter valid staking address'); return null; }
+  // minimal staking ABI (attempt common function names)
+  const stakeAbi = [
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"address","name":"referrer","type":"address"}],"name":"stake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"stake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"claimReward","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"}
+  ];
+  return new web3.eth.Contract(stakeAbi, addr);
+}
+
+document.getElementById('stakeBtn').onclick = async()=>{
+  try {
+    const sc = await getStakingContract(); if (!sc) return;
+    const amt = document.getElementById('stakeAmt').value; if (!amt) return alert('Enter amount');
+    const dec = await tokenContract.methods.decimals().call();
+    const wei = web3.utils.toBN(Math.floor(parseFloat(amt) * (10**dec)));
+    // ensure token approval first
+    const allowance = await tokenContract.methods.allowance(account, sc.options.address).call();
+    if (web3.utils.toBN(allowance).lt(wei)) {
+      await tokenContract.methods.approve(sc.options.address, wei.toString()).send({ from: account
