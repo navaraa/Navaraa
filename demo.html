@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeFiVault - Decentralized Finance Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'crypto-purple': '#6366f1',
+            'crypto-blue': '#3b82f6',
+            'crypto-green': '#10b981',
+            'dark-bg': '#0f172a',
+            'dark-card': '#1e293b',
+            'dark-border': '#334155'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .glass-effect {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .glow-effect {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-pulse-slow {
+      animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-dark-bg text-white min-h-screen">
+  <!-- Navigation -->
+  <nav class="glass-effect fixed w-full top-0 z-50 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-gradient-to-r from-crypto-purple to-crypto-blue rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold">D</span>
+        </div>
+        <span class="text-xl font-bold">DeFiVault</span>
+      </div>
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="#" class="hover:text-crypto-purple transition-colors">Dashboard</a>
+        <a href="#" class="hover:text-crypto-purple transition-colors">Swap</a>
+        <a href="#" class="hover:text-crypto-purple transition-colors">Pool</a>
+        <a href="#" class="hover:text-crypto-purple transition-colors">Stake</a>
+      </div>
+      <button id="connectWallet" class="bg-gradient-to-r from-crypto-purple to-crypto-blue px-6 py-2 rounded-lg font-semibold hover:glow-effect transition-all duration-300">
+        Connect Wallet
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="pt-20 px-6">
+    <div class="max-w-7xl mx-auto">
+      <!-- Hero Section -->
+      <div class="text-center py-16">
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-crypto-purple via-crypto-blue to-crypto-green bg-clip-text text-transparent animate-pulse-slow">
+          DeFi Reimagined
+        </h1>
+        <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          Experience the future of decentralized finance with our cutting-edge platform. Swap, stake, and earn with unparalleled security.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button class="bg-gradient-to-r from-crypto-purple to-crypto-blue px-8 py-4 rounded-lg font-semibold text-lg hover:glow-effect transition-all duration-300 animate-float">
+            Launch App
+          </button>
+          <button class="border border-crypto-purple px-8 py-4 rounded-lg font-semibold text-lg hover:bg-crypto-purple hover:bg-opacity-20 transition-all duration-300">
+            Learn More
+          </button>
+        </div>
+      </div>
+
+      <!-- Swap Section (shortened for demo) -->
+      <div class="glass-effect rounded-2xl p-8 max-w-xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6">Instant Swap</h2>
+        <button id="swapButton" class="w-full bg-gradient-to-r from-crypto-purple to-crypto-blue py-4 rounded-xl font-semibold text-lg hover:glow-effect transition-all duration-300">
+          Swap Tokens
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let provider, signer, userAddress;
+
+    // Notification system
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-24 right-6 p-4 rounded-lg text-white z-50 transform translate-x-full transition-transform duration-300 ${
+        type === 'success' ? 'bg-crypto-green' :
+        type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+      }`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => { notification.classList.remove('translate-x-full'); }, 100);
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => { document.body.removeChild(notification); }, 300);
+      }, 3000);
+    }
+
+    // Connect Wallet
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          await provider.send("eth_requestAccounts", []);
+          signer = provider.getSigner();
+          userAddress = await signer.getAddress();
+
+          const btn = document.getElementById('connectWallet');
+          btn.textContent = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+          btn.classList.remove('bg-gradient-to-r','from-crypto-purple','to-crypto-blue');
+          btn.classList.add('bg-crypto-green');
+
+          showNotification('Wallet connected: ' + userAddress, 'success');
+        } catch (err) {
+          showNotification('Connection failed: ' + err.message, 'error');
+        }
+      } else {
+        showNotification('MetaMask not found. Install it first.', 'warning');
+      }
+    }
+
+    document.getElementById('connectWallet').addEventListener('click', connectWallet);
+
+    // Dummy Swap
+    document.getElementById('swapButton').addEventListener('click', async () => {
+      if (!signer) {
+        showNotification('Please connect your wallet first!', 'warning');
+        return;
+      }
+      try {
+        const tx = await signer.sendTransaction({
+          to: userAddress,
+          value: ethers.utils.parseEther("0.0")
+        });
+        showNotification('Tx sent: ' + tx.hash, 'success');
+      } catch (err) {
+        showNotification('Transaction failed: ' + err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
