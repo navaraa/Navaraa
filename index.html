@@ -1,46 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Website</title>
-
-  <!-- CSS file link (agar alag se banayenge) -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  </style>
 </head>
 <body>
-  <!-- Header Section -->
-  <header>
-    <h1>Welcome to My Website</h1>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+  <h1>My First DApp</h1>
+  <button id="connectButton">Connect Wallet</button>
+  <p id="walletAddress"></p>
 
-  <!-- Main Content -->
-  <main>
-    <section>
-      <h2>About This Project</h2>
-      <p>
-        This is a simple index.html file. You can edit this content and design
-        your own homepage.
-      </p>
-    </section>
-  </main>
+  <script>
+    const connectButton = document.getElementById('connectButton');
+    const walletAddress = document.getElementById('walletAddress');
 
-  <!-- Footer Section -->
-  <footer>
-    <p>&copy; 2025 My Website. All rights reserved.</p>
-  </footer>
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+          walletAddress.textContent = "Connected: " + accounts[0];
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        alert("MetaMask not detected! Install MetaMask extension.");
+      }
+    }
 
-  <!-- JS file link (agar alag se banayenge) -->
-  <script src="script.js"></script>
+    connectButton.addEventListener('click', connectWallet);
+  </script>
 </body>
 </html>
