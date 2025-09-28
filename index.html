@@ -1,38 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple DApp</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-  </style>
+<meta charset="UTF-8" />
+<title>Navaraa Staking UI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;text-decoration:none;border:none;outline:none;scroll-behavior:smooth;}
+body { font-family: 'Poppins', sans-serif; background:#f5f5f5;}
+.header { background: #a29bfe; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: fixed; top:0; left:0; width:100%; padding:1rem 9%; display:flex; justify-content:space-between; align-items:center; z-index:100; }
+.logo-container { display:flex; align-items:center; }
+.logo-img { height:125px; width:auto; border-radius:8px; }
+.btn { background:#4CAF50; color:#fff; font-size:28px; padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:500; }
+.btn:hover { background:#45a049; }
+.danger { background:#e53935; color:#fff; }
+.danger:hover { background:#d32f2f; }
+.main-content { margin-top:150px; padding:0 20px; }
+.wallet-info, .total-stake { display:flex; justify-content:center; margin:20px 0; }
+.w-add, .stake-text, .stake-no { display:flex; align-items:center; background:#fff; padding:12px 20px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); font-size:28px; font-weight:700; color:#333; min-width:30%; justify-content:center; }
+.total-stake { gap:20px; }
+.wallet-balances { display:flex; justify-content:center; gap:20px; margin-top:15px; }
+.token-balance { display:flex; align-items:center; background:#fff; padding:10px 15px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); font-size:18px; font-weight:600; color:#333; }
+.token-balance img { width:28px; height:28px; margin-right:8px; border-radius:50%; }
+#stakeCards { display:flex; flex-direction:column; align-items:center; gap:20px; padding:20px; }
+.card { background:#1e1e2f; color:#fff; border-radius:15px; padding:25px; width:90%; max-width:450px; box-shadow:0 4px 15px rgba(0,0,0,0.2); transition:transform 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { transform:translateY(-5px); box-shadow:0 6px 20px rgba(0,0,0,0.3); }
+.card p { margin:10px 0; font-size:16px; line-height:1.6; }
+.card-title { font-size:20px; font-weight:700; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:8px; }
+.card-actions { margin-top:20px; display:flex; justify-content:space-between; }
+.card-actions button { flex:1; margin:0 5px; }
+.card .end-date { margin-top:15px; text-align:center; font-size:14px; color:#ccc; }
+.token-name { margin-left:4px; font-weight:500; color:#ccc; }
+.bottom-menu { position:fixed; bottom:0; left:0; right:0; height:65px; background:#fff; display:flex; justify-content:space-around; align-items:center; border-top:1px solid #ddd; box-shadow:0 -2px 10px rgba(0,0,0,0.05); z-index:1000; }
+.menu-item { display:flex; flex-direction:column; align-items:center; color:#444; font-size:13px; cursor:pointer; transition:all 0.2s ease-in-out; }
+.menu-item i { font-size:20px; margin-bottom:4px; color:#5a67d8; }
+.menu-item:hover { color:#000; transform:translateY(-2px); }
+#stakeModal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:9999; }
+#stakeModal .modal-content { background:#1e1e2f; padding:25px; border-radius:15px; width:90%; max-width:400px; color:#fff; text-align:center; box-shadow:0 5px 20px rgba(0,0,0,0.3); }
+#stakeModal .modal-content h2 { margin-bottom:20px; }
+#stakeModal .modal-content input { padding:10px; width:100%; border-radius:8px; border:1px solid #444; margin-bottom:20px; font-size:16px; color:#333; }
+#stakeModal .modal-buttons { display:flex; justify-content:space-between; gap:10px; }
+#stakeModal .modal-buttons button { flex:1; }
+</style>
 </head>
 <body>
-  <h1>My First DApp</h1>
-  <button id="connectButton">Connect Wallet</button>
-  <p id="walletAddress"></p>
+<header class="header">
+  <div class="logo-container"><img src="logo.png" alt="Logo" class="logo-img" /></div>
+  <button id="connectButton" class="btn">Connect Wallet</button>
+</header>
 
-  <script>
-    const connectButton = document.getElementById('connectButton');
-    const walletAddress = document.getElementById('walletAddress');
+<div class="main-content">
+  <div class="wallet-info"><div class="w-add" id="wallet">Not Connected</div></div>
+  <div class="wallet-balances" id="walletBalances"></div>
+</div>
 
-    async function connectWallet() {
-      if (window.ethereum) {
-        try {
-          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-          walletAddress.textContent = "Connected: " + accounts[0];
-        } catch (error) {
-          console.error(error);
-        }
-      } else {
-        alert("MetaMask not detected! Install MetaMask extension.");
-      }
+<div class="total-stake">
+  <div class="stake-text">Total Stake:</div> 
+  <div class="stake-no" id="stakeCount">-</div>
+</div>
+
+<div id="stakeCards"></div>
+
+<div class="bottom-menu">
+  <div class="menu-item" onclick="openRefer()"><i class="fas fa-user-friends"></i><span>Refer & Earn</span></div>
+  <div class="menu-item" onclick="openStake()"><i class="fas fa-coins"></i><span>Stake Now</span></div>
+  <div class="menu-item" onclick="openHistory()"><i class="fas fa-receipt"></i><span>History</span></div>
+</div>
+
+<div id="stakeModal" style="display:none;">
+  <div class="modal-content">
+    <h2>Stake Navaa</h2>
+    <input type="number" id="stakeAmount" placeholder="Enter amount" />
+    <div class="modal-buttons">
+      <button onclick="stakeNow()" class="btn">Stake Now</button>
+      <button onclick="closeStake()" class="danger">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONTRACT_ADDRESS = "0x9fd473975cecd4587d78eb71f4498dde778c4b83";
+const NAVAA_TOKEN = "0x23b7a4c2ec9d742b5b1698149e812ca1e10d3e73";
+
+const TOKEN_ABI = [
+  "function balanceOf(address account) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function approve(address spender, uint256 amount) returns (bool)"
+];
+
+const ABI = [
+  "function stakeCount(address user) view returns (uint256)",
+  "function pendingRewardForStake(address user, uint256 index) view returns (uint256)",
+  "function getStake(address user, uint256 index) view returns (uint256 amount, uint256 startTime, uint256 claimed, bool principalWithdrawn, uint256 totalReward)",
+  "function stakeTokens(uint256 amount, address referrer)",
+  "function claimStakingRewards(uint256[] calldata indices)",
+  "function withdrawPrincipal(uint256[] calldata indices)"
+];
+
+let provider, signer, contract, userAddress;
+
+async function connectWallet() {
+  if (window.ethereum) {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const network = await provider.getNetwork();
+    if (network.chainId !== 137) { alert("Switch to Polygon Mainnet"); return; }
+  } else {
+    const wcProvider = new WalletConnectProvider.default({ rpc: { 137: "https://polygon-rpc.com" } });
+    await wcProvider.enable();
+    provider = new ethers.providers.Web3Provider(wcProvider);
+    const network = await provider.getNetwork();
+    if (network.chainId !== 137) { alert("Switch to Polygon Mainnet"); return; }
+  }
+  signer = provider.getSigner();
+  userAddress = await signer.getAddress();
+  document.getElementById("wallet").innerText = userAddress;
+  const connectBtn = document.getElementById("connectButton");
+  connectBtn.innerText = "Connected";
+  connectBtn.disabled = true;
+  connectBtn.style.background = "#2e7d32";
+  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+  loadInfo();
+  await loadBalances();
+}
+
+async function loadInfo() {
+  try {
+    const count = await contract.stakeCount(userAddress);
+    document.getElementById("stakeCount").innerText = count.toString();
+    const stakeCardsContainer = document.getElementById("stakeCards");
+    stakeCardsContainer.innerHTML = "";
+    const STAKE_DURATION = 1700 * 24 * 60 * 60;
+    for (let i = 0; i < count; i++) {
+      const pending = await contract.pendingRewardForStake(userAddress, i);
+      const stakeInfo = await contract.getStake(userAddress, i);
+      const amount = stakeInfo.amount;
+      const startDate = new Date(stakeInfo.startTime.toNumber() * 1000);
+      const totalReward = stakeInfo.totalReward;
+      const endTime = new Date((stakeInfo.startTime.toNumber() + STAKE_DURATION) * 1000);
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h3 class="card-title">Stake #${i}</h3>
+        <p><b>Staked Amount:</b> ${ethers.utils.formatEther(amount)} Navaa</p>
+        <p><b>Start Date:</b> ${startDate.toLocaleString()}</p>
+        <p><b>Total Reward:</b> ${ethers.utils.formatEther(totalReward)} Navaa</p>
+        <p><b>Pending Reward:</b> <span id="pending-${i}">${ethers.utils.formatEther(pending)}</span> <span class="token-name">Navaa</span></p>
+        <div class="card-actions">
+          <button class="btn claimBtn" data-index="${i}">Claim Reward</button>
+          <button class="danger withdrawBtn" data-index="${i}">Withdraw Principal</button>
+        </div>
+        <p><b>End Date:</b> <span id="end-${i}">${endTime.toLocaleString()}</span></p>
+      `;
+      stakeCardsContainer.appendChild(card);
+      let pendingLive = parseFloat(ethers.utils.formatEther(pending));
+      const totalRewardNum = parseFloat(ethers.utils.formatEther(totalReward));
+      const rewardRatePerSecond = totalRewardNum / STAKE_DURATION;
+      setInterval(() => { pendingLive += rewardRatePerSecond; document.getElementById(`pending-${i}`).innerText = pendingLive.toFixed(6); }, 1000);
+      document.querySelectorAll(".claimBtn").forEach(btn => { btn.onclick = () => claimReward(btn.dataset.index); });
+      document.querySelectorAll(".withdrawBtn").forEach(btn => { btn.onclick = () => withdrawPrincipal(btn.dataset.index); });
     }
+  } catch(err){ console.error(err); alert("Error loading info: " + err.message);}
+}
 
-    connectButton.addEventListener('click', connectWallet);
-  </script>
+async function loadBalances() {
+  if (!provider || !userAddress) return;
+  const polBalance = await provider.getBalance(userAddress);
+  const polFormatted = ethers.utils.formatEther(polBalance);
+  const navaaContract = new ethers.Contract(NAVAA_TOKEN, TOKEN_ABI, provider);
+  const navaaBalance = await navaaContract.balanceOf(userAddress);
+  const navaaDecimals = await navaaContract.decimals();
+  const navaaFormatted = ethers.utils.formatUnits(navaaBalance, navaaDecimals);
+  document.getElementById("walletBalances").innerHTML = `
+    <div class="token-balance"><img src="POL.png" alt="MATIC">${parseFloat(polFormatted).toFixed(4)} POL</div>
+    <div class="token-balance"><img src="logo.png" alt="Navaa">${parseFloat(navaaFormatted).toFixed(4)} Navaa</div>
+  `;
+}
+
+async function claimReward(index) {
+  try { const tx = await contract.claimStakingRewards([index]); alert("Claiming stake #" + index + " ... Tx: " + tx.hash); await tx.wait(); alert("Reward claimed for stake #" + index); loadInfo(); }
+  catch(err){ console.error(err); alert("Claim failed: " + (err?.reason || err?.message || "Unknown error"));}
+}
+
+async function withdrawPrincipal(index) {
+  try { const tx = await contract.withdrawPrincipal([index]); alert("Withdrawing stake #" + index + " ... Tx: " + tx.hash); await tx.wait(); alert("Principal withdrawn for stake #" + index); loadInfo(); }
+  catch(err){ console.error(err); alert("Withdraw failed: " + (err?.reason || err?.message || "Unknown error"));}
+}
+
+document.getElementById("connectButton").onclick = connectWallet;
+
+function openStake(){ document.getElementById("stakeModal").style.display="flex"; }
+function closeStake(){ document.getElementById("stakeModal").style.display="none"; }
+
+async function stakeNow() {
+  try {
+    const amountInput = document.getElementById("stakeAmount").value;
+    if(!amountInput || isNaN(amountInput) || parseFloat(amountInput)<=0){ alert("Enter valid amount"); return; }
+    const amount = ethers.utils.parseUnits(amountInput.toString(), 18);
+    const tokenContract = new ethers.Contract(NAVAA_TOKEN, TOKEN_ABI, signer);
+    const approveTx = await tokenContract.approve(CONTRACT_ADDRESS, amount);
+    alert("Approving tokens... Tx: "+approveTx.hash); await approveTx.wait();
+    const tx = await contract.stakeTokens(amount, ethers.constants.AddressZero);
+    alert("Staking... Tx: "+tx.hash); await tx.wait();
+    alert("✅ Stake successful!");
+    closeStake(); loadInfo(); loadBalances();
+  } catch(err){ console.error(err); alert("Stake failed: " + (err?.reason || err?.message || "Unknown error"));}
+}
+
+function openRefer(){ alert("Refer & Earn clicked!"); }
+function openHistory(){ alert("Claim/Withdrawal History clicked!"); }
+</script>
 </body>
 </html>
