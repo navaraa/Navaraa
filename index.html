@@ -115,11 +115,116 @@ body {
 }
 
 /*---------Section 2 : Wallet balance + User Address ------*/
+    /* Wallet Info Container */
+.main-content {
+  margin-top: 120px; /* header ke neeche gap */
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Wallet Card (Address) */
+.wallet-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  padding: 14px 24px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  word-break: break-all;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+/* Balances Container */
+.wallet-balances {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Individual Balance Card */
+.token-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  padding: 14px 18px;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+  transition: transform 0.2s ease;
+  min-width: 140px;
+}
+
+.token-balance:hover {
+  transform: translateY(-3px);
+}
+
+.token-balance img {
+  width: 26px;
+  height: 26px;
+  margin-right: 10px;
+  border-radius: 50%;
+}
+
+/* 📱 Responsive Wallet Info */
+@media (max-width: 768px) {
+  .wallet-card {
+    font-size: 14px;
+    padding: 12px 18px;
+  }
+
+  .wallet-balances {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .token-balance {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wallet-card {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .token-balance {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
+    
+
+    /*
     .main-content {
-      margin-top: 120px; /* header ke neeche gap */
+      margin-top: 120px; /* header ke neeche gap 
       padding: 0 20px;
     }
-    /* Wallet Card (Address) */
+    /* Wallet Card (Address) 
+    
 .wallet-card {
   display: flex;
   align-items: center;
@@ -138,7 +243,7 @@ body {
   z-index: 100;
 }
 
-/* Balances Container */
+/* Balances Container 
 .wallet-balances {
   display: flex;
   justify-content: center;
@@ -147,7 +252,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* Individual Balance Card */
+/* Individual Balance Card 
 .token-balance {
   display: flex;
   align-items: center;
