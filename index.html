@@ -271,18 +271,7 @@ body {
   <div class="menu-item" onclick="openStake()"><i class="fas fa-coins"></i><span>Stake Now</span></div>
   <div class="menu-item" onclick="openHistory()"><i class="fas fa-receipt"></i><span>History</span></div>
 </div>
-<!------
-<div id="stakeModal" style="display:none;">
-  <div class="modal-content">
-    <h2>Stake Navaa</h2>
-    <input type="number" id="stakeAmount" placeholder="Enter amount" />
-    <div class="modal-buttons">
-      <button onclick="stakeNow()" class="btn">Stake Now</button>
-      <button onclick="closeStake()" class="danger">Cancel</button>
-    </div>
-  </div>
-</div>
-------->
+
   <div id="stakeModal" style="display:none;">
   <div class="modal-content">
     <h2>Stake Navaa</h2>
@@ -458,23 +447,7 @@ async function stakeNow() {
     alert("Stake failed: " + (err?.reason || err?.message || "Unknown error"));
   }
 }
-
-  /*
-async function stakeNow() {
-  try {
-    const amountInput = document.getElementById("stakeAmount").value;
-    if(!amountInput || isNaN(amountInput) || parseFloat(amountInput)<=0){ alert("Enter valid amount"); return; }
-    const amount = ethers.utils.parseUnits(amountInput.toString(), 18);
-    const tokenContract = new ethers.Contract(NAVAA_TOKEN, TOKEN_ABI, signer);
-    const approveTx = await tokenContract.approve(CONTRACT_ADDRESS, amount);
-    alert("Approving tokens... Tx: "+approveTx.hash); await approveTx.wait();
-    const tx = await contract.stakeTokens(amount, ethers.constants.AddressZero);
-    alert("Staking... Tx: "+tx.hash); await tx.wait();
-    alert("✅ Stake successful!");
-    closeStake(); loadInfo(); loadBalances();
-  } catch(err){ console.error(err); alert("Stake failed: " + (err?.reason || err?.message || "Unknown error"));}
-}
-*/
+  
 function openRefer(){ alert("Refer & Earn clicked!"); }
 function openHistory(){ alert("Claim/Withdrawal History clicked!"); }
 </script>
