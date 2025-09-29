@@ -138,7 +138,50 @@ body {
   border-radius: 50%;
 }
 /*--------------------------------------------*/
-    .stake-text,
+/*---------Section 4 : Stake Count -------------*/
+    /* Total Stake Section */
+.total-stake {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+/* Total Stake Card */
+.stake-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-radius: 16px;
+  padding: 20px 30px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  text-align: center;
+  min-width: 240px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.stake-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+}
+
+/* Title */
+.stake-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Value */
+.stake-card p {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+}
+
+/*-----------------------------------------------*/
+   /* .stake-text,
     .stake-no {
       display:flex;
       align-items:center; 
@@ -156,6 +199,8 @@ body {
     .total-stake {
       gap:20px; 
     }
+
+    */
     #stakeCards {
       display:flex; 
       flex-direction:column; 
@@ -299,10 +344,19 @@ body {
   </div>
 </div>
 
+  <div class="total-stake">
+  <div class="stake-card">
+    <h4>Total Stakes</h4>
+    <p id="stakeCount">-</p>
+  </div>
+  </div>
+  <!--
+
 <div class="total-stake">
   <div class="stake-text">Total Stake:</div> 
   <div class="stake-no" id="stakeCount">-</div>
 </div>
+  -->
 
 <div id="stakeCards"></div>
 
