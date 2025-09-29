@@ -180,10 +180,105 @@ body {
 }
 
 /*--------Section 4 : Stake Card design------------*/
+    /* Advanced Stake Card */
+.card { 
+  position: relative;
+  background: rgba(30, 30, 47, 0.85);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border-radius: 18px;
+  padding: 25px; 
+  width: 90%; 
+  max-width: 480px; 
+  color: #fff;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Gradient Glow Border */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff, #7f00ff, #e100ff);
+  z-index: -1;
+  opacity: 0.9;
+  filter: blur(14px);
+}
+
+/* Hover Animation */
+.card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+/* Card Title */
+.card-title { 
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+/* Card Info Text */
+.card p {
+  margin: 10px 0; 
+  font-size: 15px;
+  line-height: 1.6;
+  color: #ddd;
+}
+
+/* Highlight Numbers */
+.card p b {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Token Name Styling */
+.token-name { 
+  margin-left: 6px; 
+  font-weight: 500; 
+  color: #66d9ff;
+}
+
+/* Actions Section */
+.card-actions {
+  margin-top: 18px; 
+  display: flex;
+  justify-content: space-between; 
+  gap: 10px;
+}
+
+/* Buttons inside card */
+.card-actions .btn { 
+  flex: 1;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 10px;
+}
+.card-actions .danger { 
+  flex: 1;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* End Date */
+.card .end-date {
+  margin-top: 15px; 
+  text-align: center;
+  font-size: 13px;
+  color: #aaa; 
+}
     
    
 /*-------------------------------------------------*/
-    #stakeCards {
+   /* #stakeCards {
       display:flex; 
       flex-direction:column; 
       align-items:center; 
@@ -236,6 +331,7 @@ body {
       font-weight:500; 
       color:#ccc;
     }
+    */
     .bottom-menu { 
       position:fixed;
       bottom:0; 
