@@ -271,7 +271,7 @@ body {
   <div class="menu-item" onclick="openStake()"><i class="fas fa-coins"></i><span>Stake Now</span></div>
   <div class="menu-item" onclick="openHistory()"><i class="fas fa-receipt"></i><span>History</span></div>
 </div>
-
+<!------
 <div id="stakeModal" style="display:none;">
   <div class="modal-content">
     <h2>Stake Navaa</h2>
@@ -282,6 +282,21 @@ body {
     </div>
   </div>
 </div>
+------->
+  <div id="stakeModal" style="display:none;">
+  <div class="modal-content">
+    <h2>Stake Navaa</h2>
+    <p style="color:#ccc; font-size:14px;">
+      Minimum: 170000 | Maximum: 10000000
+    </p>
+    <input type="number" id="stakeAmount" placeholder="Enter amount (170000 - 10000000)" />
+    <div class="modal-buttons">
+      <button onclick="stakeNow()" class="btn">Stake Now</button>
+      <button onclick="closeStake()" class="danger">Cancel</button>
+    </div>
+  </div>
+  </div>
+  
 
 <script>
 const CONTRACT_ADDRESS = "0x9fd473975cecd4587d78eb71f4498dde778c4b83";
@@ -398,12 +413,13 @@ function openStake(){ document.getElementById("stakeModal").style.display="flex"
 function closeStake(){ document.getElementById("stakeModal").style.display="none"; }
 ///////////////////////////////////////
 
-const MIN_STAKE = ethers.utils.parseUnits("170000", 18);    // 170000 Navaa
-const MAX_STAKE = ethers.utils.parseUnits("100000000", 18);  // 100000000 Navaa
+const MIN_STAKE = ethers.utils.parseUnits("170000", 18);     // 170000 Navaa
+const MAX_STAKE = ethers.utils.parseUnits("10000000", 18);   // 10000000 Navaa
 
 async function stakeNow() {
   try {
     const amountInput = document.getElementById("stakeAmount").value;
+
     if (!amountInput || isNaN(amountInput) || parseFloat(amountInput) <= 0) {
       alert("Enter a valid amount");
       return;
@@ -413,21 +429,21 @@ async function stakeNow() {
 
     // ✅ Min/Max Validation
     if (amount.lt(MIN_STAKE)) {
-      alert("Minimum stake is 170000 Navaa");
-      return;
+      alert("❌ Minimum stake is 170000 Navaa");
+      return; // 🚨 stop here, don't approve
     }
     if (amount.gt(MAX_STAKE)) {
-      alert("Maximum stake is 100000000 Navaa");
-      return;
+      alert("❌ Maximum stake is 10000000 Navaa");
+      return; // 🚨 stop here, don't approve
     }
 
-    // Approve token
+    // ✅ Only valid amount will continue to approve + stake
     const tokenContract = new ethers.Contract(NAVAA_TOKEN, TOKEN_ABI, signer);
+
     const approveTx = await tokenContract.approve(CONTRACT_ADDRESS, amount);
     alert("Approving tokens... Tx: " + approveTx.hash);
     await approveTx.wait();
 
-    // Stake tokens (referrer = 0 → management wallet used)
     const tx = await contract.stakeTokens(amount, ethers.constants.AddressZero);
     alert("Staking... Tx: " + tx.hash);
     await tx.wait();
@@ -442,7 +458,7 @@ async function stakeNow() {
     alert("Stake failed: " + (err?.reason || err?.message || "Unknown error"));
   }
 }
-  
+
   /*
 async function stakeNow() {
   try {
