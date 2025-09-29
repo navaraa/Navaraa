@@ -468,6 +468,33 @@ async function loadInfo() {
   } catch(err){ console.error(err); alert("Error loading info: " + err.message);}
 }
 
+  async function loadBalances() {
+  if (!provider || !userAddress) return;
+
+  const polBalance = await provider.getBalance(userAddress);
+  const polFormatted = ethers.utils.formatEther(polBalance);
+
+  const navaaContract = new ethers.Contract(NAVAA_TOKEN, TOKEN_ABI, provider);
+  const navaaBalance = await navaaContract.balanceOf(userAddress);
+  const navaaDecimals = await navaaContract.decimals();
+  const navaaFormatted = ethers.utils.formatUnits(navaaBalance, navaaDecimals);
+
+  // ✅ Pehle balances show karo
+  document.getElementById("walletBalances").innerHTML = `
+    <div class="token-balance">
+      <img src="POL.png" alt="MATIC">${parseFloat(polFormatted).toFixed(4)} POL
+    </div>
+    <div class="token-balance">
+      <img src="logo.png" alt="Navaa">${parseFloat(navaaFormatted).toFixed(4)} Navaa
+    </div>
+  `;
+
+  // ✅ Fir address niche show karo
+  document.getElementById("wallet").innerText = userAddress;
+  }
+  
+  
+/*
 async function loadBalances() {
   if (!provider || !userAddress) return;
   const polBalance = await provider.getBalance(userAddress);
@@ -481,6 +508,7 @@ async function loadBalances() {
     <div class="token-balance"><img src="logo.png" alt="Navaa">${parseFloat(navaaFormatted).toFixed(4)} Navaa</div>
   `;
 }
+  */
 
 async function claimReward(index) {
   try { const tx = await contract.claimStakingRewards([index]); alert("Claiming stake #" + index + " ... Tx: " + tx.hash); await tx.wait(); alert("Reward claimed for stake #" + index); loadInfo(); }
