@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navaa Staking History</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<style>
+body { font-family: 'Poppins', sans-serif; background:#f5f5f5; margin:0; padding:0; }
+.header { position: fixed; top:0; left:0; width:100%; padding:1rem; background:#1e1e2f; color:#fff; display:flex; align-items:center; gap:15px; z-index:100; }
+.header button { padding:6px 12px; cursor:pointer; border-radius:8px; border:none; background:#46c2ff; color:#fff; }
+.container { margin-top:70px; padding:20px; }
+.history-card { background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.history-card p { margin:4px 0; font-size:14px; }
+.history-card b { color:#111; }
+.loading { text-align:center; margin-top:50px; font-size:18px; color:#555; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <button onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
+  <h3>Claim & Withdrawal History</h3>
+</header>
+
+<div class="container" id="historyContainer">
+  <div class="loading">Loading history...</div>
+</div>
+
+<script>
+const CONTRACT_ADDRESS = "0x9fd473975cecd4587d78eb71f4498dde778c4b83"; // Replace with your staking contract
+const ABI = [
+  "event RewardClaimed(address indexed user,uint256 amountNet,uint256 fee)",
+  "event PrincipalWithdrawn(address indexed user,uint256 stakeIndex,uint256 amount,uint256 fee)"
+];
+
+let provider, signer, contract, userAddress;
+
+async function init() {
+  if (!window.ethereum) { alert("Install MetaMask!"); return; }
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  signer = provider.getSigner();
+  userAddress = await signer.getAddress();
+  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+  fetchHistory();
+}
+
+function goBack(){ window.location.href = "index.html"; } // Replace with your main dapp page
+
+async function fetchHistory() {
+  const container = document.getElementById("historyContainer");
+  container.innerHTML = '<div class="loading">Loading history...</div>';
+
+  try {
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = currentBlock - 50000; // adjust depending on deployment block
+    
+    // ✅ Fetch RewardClaimed events
+    const rewardFilter = contract.filters.RewardClaimed(userAddress);
+    rewardFilter.fromBlock = fromBlock;
+    rewardFilter.toBlock = currentBlock;
+    const rewardEvents = await contract.queryFilter(rewardFilter, fromBlock, currentBlock);
+
+    // ✅ Fetch PrincipalWithdrawn events
+    const withdrawFilter = contract.filters.PrincipalWithdrawn(userAddress);
+    withdrawFilter.fromBlock = fromBlock;
+    withdrawFilter.toBlock = currentBlock;
+    const withdrawEvents = await contract.queryFilter(withdrawFilter, fromBlock, currentBlock);
+
+    const allEvents = [];
+
+    rewardEvents.forEach(ev => {
+      const net = ethers.utils.formatEther(ev.args.amountNet);
+      const fee = ethers.utils.formatEther(ev.args.fee);
+      allEvents.push({
+        type: "Claim",
+        amount: net,
+        fee: fee,
+        timestamp: ev.blockNumber
+      });
+    });
+
+    withdrawEvents.forEach(ev => {
+      const amount = ethers.utils.formatEther(ev.args.amount);
+      const fee = ethers.utils.formatEther(ev.args.fee);
+      allEvents.push({
+        type: "Withdrawal",
+        stakeIndex: ev.args.stakeIndex.toString(),
+        amount: amount,
+        fee: fee,
+        timestamp: ev.blockNumber
+      });
+    });
+
+    // Sort by block number descending
+    allEvents.sort((a,b) => b.timestamp - a.timestamp);
+
+    if(allEvents.length === 0) {
+      container.innerHTML = '<p style="text-align:center; margin-top:50px;">No history found.</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+    for(const ev of allEvents) {
+      const card = document.createElement("div");
+      card.className = "history-card";
+      if(ev.type === "Claim"){
+        card.innerHTML = `<p><b>Type:</b> Claim</p>
+                          <p><b>Amount Received:</b> ${ev.amount} Navaa</p>
+                          <p><b>Fee Deducted:</b> ${ev.fee} Navaa</p>
+                          <p><b>Block:</b> ${ev.timestamp}</p>`;
+      } else if(ev.type === "Withdrawal"){
+        card.innerHTML = `<p><b>Type:</b> Principal Withdrawal</p>
+                          <p><b>Stake Index:</b> ${ev.stakeIndex}</p>
+                          <p><b>Amount Received:</b> ${ev.amount} Navaa</p>
+                          <p><b>Fee Deducted:</b> ${ev.fee} Navaa</p>
+                          <p><b>Block:</b> ${ev.timestamp}</p>`;
+      }
+      container.appendChild(card);
+    }
+
+  } catch(err){
+    console.error(err);
+    container.innerHTML = `<p style="text-align:center; color:red;">Error fetching history: ${err.message}</p>`;
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
