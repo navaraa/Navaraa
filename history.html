@@ -1,134 +1,585 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Navaa Staking History</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Navaa — On-chain History</title>
+
+<!-- icons + ethers -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
 <style>
-body { font-family: 'Poppins', sans-serif; background:#f5f5f5; margin:0; padding:0; }
-.header { position: fixed; top:0; left:0; width:100%; padding:1rem; background:#1e1e2f; color:#fff; display:flex; align-items:center; gap:15px; z-index:100; }
-.header button { padding:6px 12px; cursor:pointer; border-radius:8px; border:none; background:#46c2ff; color:#fff; }
-.container { margin-top:70px; padding:20px; }
-.history-card { background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-.history-card p { margin:4px 0; font-size:14px; }
-.history-card b { color:#111; }
-.loading { text-align:center; margin-top:50px; font-size:18px; color:#555; }
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220aa;
+    --glass:#ffffff08;
+    --accent:#4facfe;
+    --muted:#9aa4b2;
+    --glass-2:#ffffff10;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, system-ui, -apple-system, "Poppins", sans-serif;
+    background: linear-gradient(180deg,#071026 0%, #071827 100%);
+    color:#e6eef8;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  header.appbar{
+    width:100%;
+    max-width:980px;
+    margin:18px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .brand{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .brand img{height:44px;border-radius:10px;box-shadow:0 6px 20px rgba(16,24,40,0.6)}
+  .brand h1{font-size:18px;margin:0;font-weight:700;letter-spacing:0.2px}
+  .controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  .btn{
+    background:linear-gradient(90deg,var(--accent),#46c2ff);
+    border-radius:10px;
+    padding:9px 14px;
+    font-weight:600;
+    color:#042235;
+    cursor:pointer;
+    border:none;
+  }
+  .btn.ghost{
+    background:transparent;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.04);
+  }
+  .input{
+    background:var(--glass-2);
+    border-radius:10px;
+    padding:10px 12px;
+    border:1px solid rgba(255,255,255,0.03);
+    color: #e6eef8;
+    min-width:250px;
+  }
+  .small{font-size:13px;color:var(--muted)}
+
+  main.container{
+    width:100%;
+    max-width:980px;
+    padding:18px;
+  }
+
+  .panel{
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:14px;
+    padding:16px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .filters{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .filter-btn{
+    padding:8px 12px;
+    border-radius:999px;
+    background:transparent;
+    color:var(--muted);
+    border:1px solid rgba(255,255,255,0.03);
+    cursor:pointer;
+    font-weight:600;
+  }
+  .filter-btn.active{
+    color:#042235;
+    background:linear-gradient(90deg,var(--accent),#46c2ff);
+  }
+
+  .summary{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:12px 16px;border-radius:10px;
+    min-width:120px;
+    text-align:center;
+  }
+  .stat h3{margin:0;font-size:20px}
+  .stat p{margin:4px 0 0 0;color:var(--muted);font-size:13px}
+
+  .list{
+    margin-top:14px;
+    display:grid;
+    gap:12px;
+  }
+
+  .tx-card{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    padding:14px;
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .tx-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .tx-body{flex:1}
+  .tx-title{font-weight:700;margin:0 0 6px 0}
+  .tx-meta{color:var(--muted);font-size:13px;margin-bottom:8px}
+  .tx-right{min-width:140px;text-align:right}
+  .tx-amount{font-weight:800;font-size:15px}
+  .tx-hash a{color:#9ad1ff;text-decoration:none;font-family:monospace;font-size:13px}
+
+  .loader{
+    text-align:center;color:var(--muted);padding:30px 0;
+  }
+
+  footer{margin:22px 0 60px 0;color:var(--muted);font-size:13px;text-align:center}
+  @media (max-width:720px){
+    .tx-card{flex-direction:column;align-items:flex-start}
+    .tx-right{text-align:left}
+    .input{min-width:160px}
+    header.appbar{margin:10px}
+  }
 </style>
 </head>
 <body>
 
-<header class="header">
-  <button onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</button>
-  <h3>Claim & Withdrawal History</h3>
+<header class="appbar">
+  <div class="brand">
+    <img src="logo.png" alt="logo" onerror="this.style.display='none'">
+    <div>
+      <h1>Navaa — On-chain History</h1>
+      <div class="small">View Staked / Claim / Withdraw / Referral events (Polygon)</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input id="manualAddress" class="input" placeholder="Paste wallet address (or connect MetaMask)" />
+    <button id="connectBtn" class="btn">🔗 Connect Wallet</button>
+    <button id="refreshBtn" class="btn ghost" title="Reload events">⟳ Refresh</button>
+  </div>
 </header>
 
-<div class="container" id="historyContainer">
-  <div class="loading">Loading history...</div>
-</div>
+<main class="container">
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="filters" id="filters">
+          <button class="filter-btn active" data-filter="ALL">All</button>
+          <button class="filter-btn" data-filter="STAKED">Stake</button>
+          <button class="filter-btn" data-filter="CLAIMED">Claim</button>
+          <button class="filter-btn" data-filter="WITHDRAW">Withdraw</button>
+          <button class="filter-btn" data-filter="REFERRAL">Referral</button>
+        </div>
+        <div class="small" id="statusLine">Status: Idle</div>
+      </div>
+
+      <div style="min-width:220px;">
+        <div class="small">Contract: <b id="contractAddr">0x9fd4...4b83</b></div>
+        <div class="small">Network: <b>Polygon</b></div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary">
+      <div class="stat"><h3 id="totalCount">-</h3><p>Total events</p></div>
+      <div class="stat"><h3 id="stakeCount">-</h3><p>Staked</p></div>
+      <div class="stat"><h3 id="claimCount">-</h3><p>Claimed</p></div>
+      <div class="stat"><h3 id="withdrawCount">-</h3><p>Withdrawn</p></div>
+      <div class="stat"><h3 id="refCount">-</h3><p>Referrals</p></div>
+    </div>
+
+    <div id="listArea">
+      <div class="loader" id="loader">Enter or connect wallet, then click Refresh.</div>
+      <div class="list" id="txList" style="display:none"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Tip: Set <code>DEPLOYMENT_BLOCK</code> in the script to your contract's deployment block to speed up fetching.</footer>
 
 <script>
-const CONTRACT_ADDRESS = "0x9fd473975cecd4587d78eb71f4498dde778c4b83"; // Replace with your staking contract
-const ABI = [
-  "event RewardClaimed(address indexed user,uint256 amountNet,uint256 fee)",
-  "event PrincipalWithdrawn(address indexed user,uint256 stakeIndex,uint256 amount,uint256 fee)"
+/* ---------------- CONFIG ---------------- */
+const CONTRACT_ADDRESS = "0x9fd473975cecd4587d78eb71f4498dde778c4b83";
+const NETWORK_RPC = "https://polygon-rpc.com"; // fallback JSON-RPC for read-only
+const DEPLOYMENT_BLOCK = 76592656; // <- set your contract deployment block for faster queries
+const PAGE_SIZE = 2000; // if you want to implement block pagination later
+/* ---------------------------------------- */
+
+/* ABI pieces needed (events + token accessor). We will create iface from these signatures */
+const EVENT_ABI = [
+  "event Staked(address indexed user, uint256 indexed stakeIndex, uint256 amount, address indexed referrer)",
+  "event RewardClaimed(address indexed user, uint256 amountNet, uint256 fee)",
+  "event PrincipalWithdrawn(address indexed user, uint256 stakeIndex, uint256 amount, uint256 fee)",
+  "event ReferralPaid(address indexed referrer, address indexed referee, uint256 amount)",
+  // small functions to read token
+  "function token() view returns (address)"
 ];
 
-let provider, signer, contract, userAddress;
+let provider, signer, userAddress = null;
+let contract;
+let tokenDecimals = 18;
+let tokenSymbol = "Navaa";
+const iface = new ethers.utils.Interface(EVENT_ABI);
+const blockTimeCache = {}; // blockNumber -> timestamp
 
-async function init() {
-  if (!window.ethereum) { alert("Install MetaMask!"); return; }
-  provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  signer = provider.getSigner();
-  userAddress = await signer.getAddress();
-  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-  fetchHistory();
+/* DOM */
+const connectBtn = document.getElementById("connectBtn");
+const manualAddress = document.getElementById("manualAddress");
+const refreshBtn = document.getElementById("refreshBtn");
+const statusLine = document.getElementById("statusLine");
+const txList = document.getElementById("txList");
+const loader = document.getElementById("loader");
+const contractAddrEl = document.getElementById("contractAddr");
+const totalCountEl = document.getElementById("totalCount");
+const stakeCountEl = document.getElementById("stakeCount");
+const claimCountEl = document.getElementById("claimCount");
+const withdrawCountEl = document.getElementById("withdrawCount");
+const refCountEl = document.getElementById("refCount");
+const filters = document.getElementById("filters");
+
+contractAddrEl.innerText = CONTRACT_ADDRESS.slice(0,8) + "..." + CONTRACT_ADDRESS.slice(-6);
+
+/* Helpers */
+function setStatus(msg){
+  statusLine.innerText = "Status: " + msg;
 }
-
-function goBack(){ window.location.href = "index.html"; } // Replace with your main dapp page
-
-async function fetchHistory() {
-  const container = document.getElementById("historyContainer");
-  container.innerHTML = '<div class="loading">Loading history...</div>';
-
+function showLoader(msg){
+  loader.style.display = "block";
+  txList.style.display = "none";
+  loader.innerText = msg || "Loading...";
+}
+function hideLoader(){
+  loader.style.display = "none";
+  txList.style.display = "grid";
+}
+function shortHash(h){
+  if(!h) return "";
+  return h.slice(0,10) + "...";
+}
+function formatAmount(amountBig){
   try {
-    const currentBlock = await provider.getBlockNumber();
-    const fromBlock = currentBlock - 50000; // adjust depending on deployment block
-    
-    // ✅ Fetch RewardClaimed events
-    const rewardFilter = contract.filters.RewardClaimed(userAddress);
-    rewardFilter.fromBlock = fromBlock;
-    rewardFilter.toBlock = currentBlock;
-    const rewardEvents = await contract.queryFilter(rewardFilter, fromBlock, currentBlock);
-
-    // ✅ Fetch PrincipalWithdrawn events
-    const withdrawFilter = contract.filters.PrincipalWithdrawn(userAddress);
-    withdrawFilter.fromBlock = fromBlock;
-    withdrawFilter.toBlock = currentBlock;
-    const withdrawEvents = await contract.queryFilter(withdrawFilter, fromBlock, currentBlock);
-
-    const allEvents = [];
-
-    rewardEvents.forEach(ev => {
-      const net = ethers.utils.formatEther(ev.args.amountNet);
-      const fee = ethers.utils.formatEther(ev.args.fee);
-      allEvents.push({
-        type: "Claim",
-        amount: net,
-        fee: fee,
-        timestamp: ev.blockNumber
-      });
-    });
-
-    withdrawEvents.forEach(ev => {
-      const amount = ethers.utils.formatEther(ev.args.amount);
-      const fee = ethers.utils.formatEther(ev.args.fee);
-      allEvents.push({
-        type: "Withdrawal",
-        stakeIndex: ev.args.stakeIndex.toString(),
-        amount: amount,
-        fee: fee,
-        timestamp: ev.blockNumber
-      });
-    });
-
-    // Sort by block number descending
-    allEvents.sort((a,b) => b.timestamp - a.timestamp);
-
-    if(allEvents.length === 0) {
-      container.innerHTML = '<p style="text-align:center; margin-top:50px;">No history found.</p>';
-      return;
-    }
-
-    container.innerHTML = '';
-    for(const ev of allEvents) {
-      const card = document.createElement("div");
-      card.className = "history-card";
-      if(ev.type === "Claim"){
-        card.innerHTML = `<p><b>Type:</b> Claim</p>
-                          <p><b>Amount Received:</b> ${ev.amount} Navaa</p>
-                          <p><b>Fee Deducted:</b> ${ev.fee} Navaa</p>
-                          <p><b>Block:</b> ${ev.timestamp}</p>`;
-      } else if(ev.type === "Withdrawal"){
-        card.innerHTML = `<p><b>Type:</b> Principal Withdrawal</p>
-                          <p><b>Stake Index:</b> ${ev.stakeIndex}</p>
-                          <p><b>Amount Received:</b> ${ev.amount} Navaa</p>
-                          <p><b>Fee Deducted:</b> ${ev.fee} Navaa</p>
-                          <p><b>Block:</b> ${ev.timestamp}</p>`;
-      }
-      container.appendChild(card);
-    }
-
-  } catch(err){
-    console.error(err);
-    container.innerHTML = `<p style="text-align:center; color:red;">Error fetching history: ${err.message}</p>`;
+    return ethers.utils.formatUnits(amountBig, tokenDecimals);
+  } catch(e){
+    return ethers.utils.formatUnits(amountBig, 18);
   }
 }
 
-init();
-</script>
+/* Connect logic: tries to use window.ethereum, else fallback read-only */
+async function ensureProvider(needSigner=false){
+  if(window.ethereum){
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    if(needSigner){
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      userAddress = await signer.getAddress();
+      manualAddress.value = userAddress;
+    }
+  } else {
+    provider = new ethers.providers.JsonRpcProvider(NETWORK_RPC);
+    signer = null;
+  }
+  contract = new ethers.Contract(CONTRACT_ADDRESS, EVENT_ABI, provider);
+  // try to read token info
+  try {
+    const tokenAddr = await contract.token();
+    if(tokenAddr && tokenAddr !== ethers.constants.AddressZero){
+      const tokenAbi = ["function decimals() view returns (uint8)", "function symbol() view returns (string)"];
+      const tokenC = new ethers.Contract(tokenAddr, tokenAbi, provider);
+      tokenDecimals = await tokenC.decimals();
+      try { tokenSymbol = await tokenC.symbol(); } catch(e){}
+    }
+  } catch(e){
+    // ignore, keep defaults
+  }
+}
 
-</body>
-</html>
+/* fetch block timestamp with caching */
+async function getBlockTime(blockNumber){
+  if(blockTimeCache[blockNumber]) return blockTimeCache[blockNumber];
+  const b = await provider.getBlock(blockNumber);
+  const t = b ? b.timestamp * 1000 : Date.now();
+  blockTimeCache[blockNumber] = t;
+  return t;
+}
+
+/* Build and fetch logs for each event type */
+async function fetchEventsForAddress(addr){
+  setStatus("Fetching logs for " + addr);
+  showLoader("⏳ Fetching on-chain events... (this may take a moment)");
+
+  // set filters
+  const c = new ethers.Contract(CONTRACT_ADDRESS, EVENT_ABI, provider);
+
+  // Claim & Withdraw: indexed user (first param), Staked: indexed user (first param)
+  const stakedFilter = c.filters.Staked(addr);
+  const claimedFilter = c.filters.RewardClaimed(addr);
+  const withdrawnFilter = c.filters.PrincipalWithdrawn(addr);
+
+  // ReferralPaid has referrer (indexed 1) and referee (indexed 2).
+  // We need to fetch both where user is referrer OR referee.
+  const referralFilterReferrer = c.filters.ReferralPaid(addr, null);
+  const referralFilterReferee  = c.filters.ReferralPaid(null, addr);
+
+  // Use getLogs
+  const fromBlock = DEPLOYMENT_BLOCK || 0;
+  try {
+    // fetch all in parallel
+    const [stakedLogs, claimedLogs, withdrawnLogs, referrerLogs, refereeLogs] = await Promise.all([
+      provider.getLogs({ ...stakedFilter, fromBlock, toBlock: "latest" }),
+      provider.getLogs({ ...claimedFilter, fromBlock, toBlock: "latest" }),
+      provider.getLogs({ ...withdrawnFilter, fromBlock, toBlock: "latest" }),
+      provider.getLogs({ ...referralFilterReferrer, fromBlock, toBlock: "latest" }),
+      provider.getLogs({ ...referralFilterReferee,  fromBlock, toBlock: "latest" })
+    ]);
+
+    const combined = [];
+
+    stakedLogs.forEach(log=>{
+      try {
+        const parsed = iface.parseLog(log);
+        combined.push({
+          kind: "STAKED",
+          blockNumber: log.blockNumber,
+          txHash: log.transactionHash,
+          index: parsed.args.stakeIndex ? parsed.args.stakeIndex.toString() : (parsed.args[1] ? parsed.args[1].toString() : "-"),
+          amount: parsed.args.amount ? parsed.args.amount.toString() : "0",
+          referrer: parsed.args.referrer || null,
+          raw: parsed
+        });
+      } catch(e){}
+    });
+
+    claimedLogs.forEach(log=>{
+      try {
+        const parsed = iface.parseLog(log);
+        combined.push({
+          kind: "CLAIMED",
+          blockNumber: log.blockNumber,
+          txHash: log.transactionHash,
+          amount: parsed.args.amountNet ? parsed.args.amountNet.toString() : "0",
+          fee: parsed.args.fee ? parsed.args.fee.toString() : "0",
+          raw: parsed
+        });
+      } catch(e){}
+    });
+
+    withdrawnLogs.forEach(log=>{
+      try {
+        const parsed = iface.parseLog(log);
+        combined.push({
+          kind: "WITHDRAW",
+          blockNumber: log.blockNumber,
+          txHash: log.transactionHash,
+          index: parsed.args.stakeIndex ? parsed.args.stakeIndex.toString() : (parsed.args[1] ? parsed.args[1].toString() : "-"),
+          amount: parsed.args.amount ? parsed.args.amount.toString() : "0",
+          fee: parsed.args.fee ? parsed.args.fee.toString() : "0",
+          raw: parsed
+        });
+      } catch(e){}
+    });
+
+    // referrals where user is referrer
+    referrerLogs.forEach(log=>{
+      try {
+        const parsed = iface.parseLog(log);
+        combined.push({
+          kind: "REFERRAL",
+          blockNumber: log.blockNumber,
+          txHash: log.transactionHash,
+          referrer: parsed.args.referrer || null,
+          referee: parsed.args.referee || null,
+          amount: parsed.args.amount ? parsed.args.amount.toString() : "0",
+          raw: parsed
+        });
+      } catch(e){}
+    });
+
+    // referrals where user is referee (could duplicate if both indexed equal)
+    refereeLogs.forEach(log=>{
+      try {
+        const parsed = iface.parseLog(log);
+        combined.push({
+          kind: "REFERRAL",
+          blockNumber: log.blockNumber,
+          txHash: log.transactionHash,
+          referrer: parsed.args.referrer || null,
+          referee: parsed.args.referee || null,
+          amount: parsed.args.amount ? parsed.args.amount.toString() : "0",
+          raw: parsed
+        });
+      } catch(e){}
+    });
+
+    // Deduplicate by txHash+kind (rare duplicates)
+    const uniq = {};
+    const dedup = [];
+    combined.forEach(item=>{
+      const key = item.txHash + "|" + item.kind + "|" + (item.index||"");
+      if(!uniq[key]){
+        uniq[key]=true;
+        dedup.push(item);
+      }
+    });
+
+    // Sort by blockNumber desc
+    dedup.sort((a,b)=> (b.blockNumber - a.blockNumber) || (a.txHash.localeCompare(b.txHash)));
+
+    // Render
+    await renderEvents(dedup);
+  } catch(err){
+    console.error(err);
+    loader.innerText = "Error fetching logs: " + (err.message || err);
+  }
+}
+
+/* render list of parsed events */
+async function renderEvents(events){
+  if(!events || events.length===0){
+    txList.innerHTML = "";
+    hideLoader();
+    loader.innerText = "No on-chain events found for this address.";
+    loader.style.display = "block";
+    setStatus("No events found");
+    updateSummary([]);
+    return;
+  }
+
+  txList.innerHTML = "";
+  hideLoader();
+  setStatus("Rendering " + events.length + " events");
+
+  // Prepare counts
+  updateSummary(events);
+
+  // caching block time calls for speed
+  const blockNums = [...new Set(events.map(e=>e.blockNumber))];
+  await Promise.all(blockNums.map(async bn => {
+    if(!blockTimeCache[bn]) blockTimeCache[bn] = await getBlockTime(bn);
+  }));
+
+  // create card for each event
+  events.forEach(ev=>{
+    const card = document.createElement("div");
+    card.className = "tx-card";
+
+    const iconDiv = document.createElement("div");
+    iconDiv.className = "tx-icon";
+    if(ev.kind==="STAKED"){
+      iconDiv.innerHTML = '<i class="fa-solid fa-coins"></i>';
+      iconDiv.style.background = "linear-gradient(180deg,#0f1724,#07203a)";
+    } else if(ev.kind==="CLAIMED"){
+      iconDiv.innerHTML = '<i class="fa-solid fa-gift"></i>';
+      iconDiv.style.background = "linear-gradient(180deg,#062a12,#083b19)";
+    } else if(ev.kind==="WITHDRAW"){
+      iconDiv.innerHTML = '<i class="fa-solid fa-hand-holding-dollar"></i>';
+      iconDiv.style.background = "linear-gradient(180deg,#301016,#4a0f1f)";
+    } else {
+      iconDiv.innerHTML = '<i class="fa-solid fa-user-friends"></i>';
+      iconDiv.style.background = "linear-gradient(180deg,#1a1330,#24153f)";
+    }
+
+    const body = document.createElement("div");
+    body.className = "tx-body";
+
+    const title = document.createElement("div");
+    title.className = "tx-title";
+
+    const meta = document.createElement("div");
+    meta.className = "tx-meta";
+
+    const right = document.createElement("div");
+    right.className = "tx-right";
+
+    // fill content based on type
+    if(ev.kind==="STAKED"){
+      title.innerText = `Staked — Stake #${ev.index || "-"}`;
+      meta.innerHTML = `Referrer: ${ev.referrer ? ev.referrer : '<span style="color:var(--muted)">none</span>'}`;
+      right.innerHTML = `<div class="tx-amount">${formatAmount(ev.amount)} ${tokenSymbol}</div>
+                         <div class="tx-hash"><a target="_blank" href="https://polygonscan.com/tx/${ev.txHash}">${shortHash(ev.txHash)}</a></div>`;
+    } else if(ev.kind==="CLAIMED"){
+      title.innerText = `Reward Claimed`;
+      meta.innerHTML = `Fee: ${ev.fee ? formatAmount(ev.fee) + ' ' + tokenSymbol : '—'}`;
+      right.innerHTML = `<div class="tx-amount">${formatAmount(ev.amount)} ${tokenSymbol}</div>
+                         <div class="tx-hash"><a target="_blank" href="https://polygonscan.com/tx/${ev.txHash}">${shortHash(ev.txHash)}</a></div>`;
+    } else if(ev.kind==="WITHDRAW"){
+      title.innerText = `Principal Withdrawn — Stake #${ev.index || "-"}`;
+      meta.innerHTML = `Fee: ${ev.fee ? formatAmount(ev.fee) + ' ' + tokenSymbol : '—'}`;
+      right.innerHTML = `<div class="tx-amount">${formatAmount(ev.amount)} ${tokenSymbol}</div>
+                         <div class="tx-hash"><a target="_blank" href="https://polygonscan.com/tx/${ev.txHash}">${shortHash(ev.txHash)}</a></div>`;
+    } else { // REFERRAL
+      title.innerText = `Referral Paid`;
+      meta.innerHTML = `Referrer: ${ev.referrer || '-'} · Referee: ${ev.referee || '-'}`;
+      right.innerHTML = `<div class="tx-amount">${formatAmount(ev.amount)} ${tokenSymbol}</div>
+                         <div class="tx-hash"><a target="_blank" href="https://polygonscan.com/tx/${ev.txHash}">${shortHash(ev.txHash)}</a></div>`;
+    }
+
+    // time
+    const ts = blockTimeCache[ev.blockNumber] ? new Date(blockTimeCache[ev.blockNumber]) : new Date();
+    const timeStr = ts.toLocaleString();
+    const timeLine = document.createElement("div");
+    timeLine.className = "small";
+    timeLine.style.marginTop = "6px";
+    timeLine.style.color = "var(--muted)";
+    timeLine.innerText = timeStr;
+
+    body.appendChild(title);
+    body.appendChild(meta);
+    body.appendChild(timeLine);
+
+    card.appendChild(iconDiv);
+    card.appendChild(body);
+    card.appendChild(right);
+
+    // data attributes for filtering
+    card.dataset.kind = ev.kind;
+
+    txList.appendChild(card);
+  });
+
+  applyFilter(currentFilter);
+}
+
+/* Summary counts */
+function updateSummary(events){
+  const total = events.length;
+  const st = events.filter(e=>e.kind==="STAKED").length;
+  const cl = events.filter(e=>e.kind==="CLAIMED").length;
+  const wd = events.filter(e=>e.kind==="WITHDRAW").length;
+  const rf = events.filter(e=>e.kind==="REFERRAL").length;
+
+  totalCountEl.innerText = total;
+  stakeCountEl.innerText = st;
+  claimCountEl.innerText = cl;
+  withdrawCountEl.innerText = wd;
+  refCountEl.innerText = rf;
+}
+
+/* Filtering */
+let currentFilter = "ALL";
+filters.addEventListener("click", (ev)=>{
+  const btn = ev.target.closest(".filter-btn");
+  if(!btn) return;
+  document.queryS
