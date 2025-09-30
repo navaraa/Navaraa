@@ -299,13 +299,132 @@ body {
 #stakeCards {
   display: flex;
   flex-direction: column;
-  align-items: center;   /* center horizontally */
-  gap: 20px;             /* cards ke beech gap */
+  align-items: center;
+  gap: 22px;
+  padding: 20px;
+}
+
+/* Individual Stake Card */
+.card {
+  background: linear-gradient(145deg, rgba(30,30,46,0.95), rgba(25,25,35,0.9));
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 18px;
+  padding: 25px;
+  width: 95%;
+  max-width: 480px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  transition: all 0.3s ease;
+  color: #f5f5f5;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  height: 4px;
+  background: linear-gradient(90deg, #4facfe, #00f2fe, #43e97b, #38f9d7);
+  border-radius: 18px 18px 0 0;
+  animation: gradient-move 6s linear infinite;
+}
+
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+}
+
+/* Card Title */
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* Card Text */
+.card p {
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #cfcfcf;
+}
+
+/* Highlighted Numbers */
+.card b {
+  color: #ffffff;
+}
+.card span.token-name {
+  color: #00f2fe;
+  font-weight: 600;
+}
+
+/* Actions */
+.card-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+}
+
+.card-actions .btn,
+.card-actions .danger {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.card-actions .btn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: #fff;
+}
+.card-actions .btn:hover {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  transform: scale(1.05);
+}
+
+.card-actions .danger {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: #fff;
+}
+.card-actions .danger:hover {
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  transform: scale(1.05);
+}
+
+/* End Date */
+.card .end-date {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #aaa;
+}
+    
+    
+
+    
+/* Stake Cards Container *
+#stakeCards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* center horizontally *
+  gap: 20px;             /* cards ke beech gap *
   padding: 20px;
   padding-bottom: 100px; /* bottom-menu ke liye space */
 }
 
-/* Stake Card */
+/* Stake Card *
 .card { 
   position: relative;
   background: rgba(30, 30, 47, 0.88);
@@ -326,7 +445,7 @@ body {
   box-shadow: 0 12px 30px rgba(0,0,0,0.35);
 }
 
-/* Card Title */
+/* Card Title *
 .card-title { 
   font-size: 18px;
   font-weight: 700;
@@ -337,7 +456,7 @@ body {
   color: #fff;
 }
 
-/* Card Info */
+/* Card Info *
 .card p {
   margin: 8px 0; 
   font-size: 14px;
@@ -345,7 +464,7 @@ body {
   color: #ddd;
 }
 
-/* Highlighted values */
+/* Highlighted values *
 .card p b {
   color: #fff;
   font-weight: 600;
@@ -358,7 +477,7 @@ body {
   color: #66d9ff;
 }
 
-/* Actions Section */
+/* Actions Section *
 .card-actions {
   margin-top: 15px; 
   display: flex;
@@ -374,7 +493,7 @@ body {
   border-radius: 8px;
 }
 
-/* End Date */
+/* End Date *
 .card .end-date {
   margin-top: 12px; 
   text-align: center;
@@ -382,10 +501,10 @@ body {
   color: #aaa; 
 }
 
-/* 🔥 Responsive Tweaks */
+/* 🔥 Responsive Tweaks *
 @media (max-width: 600px) {
   .card {
-    max-width: 100%;   /* mobile pe full width */
+    max-width: 100%;   /* mobile pe full width *
     padding: 18px 16px;
     border-radius: 14px;
   }
@@ -407,7 +526,7 @@ body {
 
 @media (min-width: 1024px) {
   #stakeCards {
-    flex-direction: row;       /* desktop pe grid layout */
+    flex-direction: row;       /* desktop pe grid layout *
     flex-wrap: wrap;
     justify-content: center;
   }
