@@ -209,18 +209,102 @@ body {
     gap: 10px;
   }
 }
-
-    
-
 /*---------Section 3 : Stake Count -------------*/
-    /* Total Stake Section */
+    /*---------Section 3 : Stake Count -------------*/
+.total-stake {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  padding: 0 20px;
+}
+
+.stake-card {
+  position: relative;
+  background: rgba(30, 30, 47, 0.85);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border-radius: 18px;
+  padding: 24px 32px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  text-align: center;
+  min-width: 260px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+/* Gradient Border Effect */
+.stake-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #6d5dfc, #46c2ff, #23d5ab);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.stake-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+/* Title */
+.stake-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #aaa;
+  margin-bottom: 10px;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.stake-card h4 i {
+  color: #46c2ff;
+  font-size: 18px;
+}
+
+/* Value */
+.stake-card p {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(70, 194, 255, 0.6);
+  letter-spacing: 1px;
+}
+
+/* 📱 Responsive */
+@media (max-width: 480px) {
+  .stake-card {
+    padding: 18px 20px;
+    min-width: 200px;
+  }
+
+  .stake-card h4 {
+    font-size: 14px;
+  }
+
+  .stake-card p {
+    font-size: 22px;
+  }
+}
+
+
+/*-----------------------------------------------*/
+    /* Total Stake Section 
 .total-stake {
   display: flex;
   justify-content: center;
   margin-top: 25px;
 }
 
-/* Total Stake Card */
+/* Total Stake Card 
 .stake-card {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px) saturate(180%);
@@ -238,7 +322,7 @@ body {
   box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
-/* Title */
+/* Title 
 .stake-card h4 {
   font-size: 15px;
   font-weight: 600;
@@ -247,7 +331,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Value */
+/* Value 
 .stake-card p {
   font-size: 22px;
   font-weight: 700;
@@ -475,6 +559,14 @@ body {
     <div class="wallet-card" id="wallet">Not Connected</div>
   </div>
 </div>
+<!----new counter stake ---->
+  <div class="total-stake">
+  <div class="stake-card">
+    <h4><i class="fas fa-database"></i> Total Stakes</h4>
+    <p id="stakeCount">-</p>
+  </div>
+  </div>
+  <!--
 
   <div class="total-stake">
   <div class="stake-card">
@@ -482,6 +574,7 @@ body {
     <p id="stakeCount">-</p>
   </div>
   </div>
+  -->
 
 <div id="stakeCards"></div>
 
