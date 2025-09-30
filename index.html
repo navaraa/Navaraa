@@ -411,7 +411,63 @@ body {
   font-size: 13px;
   color: #aaa;
 }
-/*-------------------------------------------------*/
+/*--------------- Section 5 : Bottom Menu bar--------------*/
+    .bottom-menu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #fff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  z-index: 1000;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #444;
+  font-size: 12px;  /* thoda chhota font */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  width: 60px; /* limit width so icons/text don't overflow */
+}
+
+.menu-item i {
+  font-size: 20px;
+  margin-bottom: 4px;
+  color: #5a67d8;
+}
+
+.menu-item span {
+  font-size: 10px; /* chhota text */
+  text-align: center;
+}
+
+.menu-item:hover {
+  color: #000;
+  transform: translateY(-2px);
+}
+    @media (max-width: 480px) {
+  .menu-item {
+    width: auto;
+    margin: 0 4px;
+  }
+  .menu-item span {
+    font-size: 9px;
+  }
+  .menu-item i {
+    font-size: 18px;
+  }
+    }
+  
+  /*---------------------------------------------*/
+    /*
     .bottom-menu { 
       position:fixed;
       bottom:0; 
@@ -517,10 +573,12 @@ body {
 
 <div id="stakeCards"></div>
 
-<div class="bottom-menu">
-  <div class="menu-item" onclick="openRefer()"><i class="fas fa-user-friends"></i><span>Refer & Earn</span></div>
-  <div class="menu-item" onclick="openStake()"><i class="fas fa-coins"></i><span>Stake Now</span></div>
-  <div class="menu-item" onclick="openHistory()"><i class="fas fa-receipt"></i><span>History</span></div>
+  <div class="bottom-menu">
+    <div class="menu-item" onclick="openStake()"><i class="fas fa-coins"></i><span>Stake</span></div>
+    <div class="menu-item" onclick="openRefer()"><i class="fas fa-user-friends"></i><span>Refer</span></div>
+    <div class="menu-item" onclick="openSwap()"><i class="fas fa-exchange-alt"></i><span>Swap</span></div>
+    <div class="menu-item" onclick="openTerms()"><i class="fas fa-file-contract"></i><span>Terms</span></div>
+    <div class="menu-item" onclick="openHistory()"><i class="fas fa-receipt"></i><span>History</span></div>
 </div>
 
   <div id="stakeModal" style="display:none;">
@@ -713,6 +771,8 @@ async function stakeNow() {
 
   
 function openRefer(){ alert("Refer & Earn clicked!"); }
+function openSwap(){ alert("Swap clicked!");}
+function openTerms(){ alert("T&C clicked!");}
 function openHistory(){ alert("Claim/Withdrawal History clicked!"); }
 </script>
 </body>
