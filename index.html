@@ -733,12 +733,15 @@ async function stakeNow() {
     alert("Stake failed: " + (err?.reason || err?.message || "Unknown error"));
   }
 }
-
+///////////// History 
+  function openHistory() {
+  window.location.href = "history.html"; // ye naya page open karega
+}
   
 function openRefer(){ alert("Refer & Earn clicked!"); }
 function openSwap(){ alert("Swap clicked!");}
 function openTerms(){ alert("T&C clicked!");}
-function openHistory(){ alert("Claim/Withdrawal History clicked!"); }
+// function openHistory(){ alert("Claim/Withdrawal History clicked!"); }
 </script>
 </body>
 </html>
