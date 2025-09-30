@@ -3,155 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stake History</title>
+<title>Claim & Withdrawal History</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
-body{ background:#f5f5f5; padding-top:70px; }
-header{ position:fixed; top:0; left:0; width:100%; background:#fff; border-bottom:1px solid #ddd; height:60px; display:flex; align-items:center; justify-content:space-between; z-index:1000; padding:0 15px; box-shadow:0 2px 10px rgba(0,0,0,0.05);}
-header h1{ font-size:20px; color:#333; }
-.btn-back{ padding:6px 12px; background:#4facfe; color:#fff; border-radius:8px; text-decoration:none; display:flex; align-items:center; gap:5px; transition:0.3s;}
-.btn-back:hover{ background:#38f9d7; }
-.container{ max-width:900px; margin:0 auto; padding:20px; }
-table{ width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-th, td{ padding:12px; text-align:left; border-bottom:1px solid #eee; font-size:14px; }
-th{ background:#4facfe; color:#fff; font-weight:600; }
-tr:hover{ background:#f0f8ff; }
-.token-name{ font-weight:600; color:#00f2fe; }
-@media (max-width:480px){
-  th, td{ font-size:12px; padding:8px; }
-}
+body{font-family:Poppins,sans-serif;background:#f5f5f5;margin:0;padding:0;}
+.header{padding:1rem;text-align:center;background:#2e7d32;color:#fff;font-weight:600;position:sticky;top:0;}
+.back-btn{position:absolute;left:10px;top:12px;background:#fff;color:#2e7d32;padding:6px 12px;border-radius:8px;cursor:pointer;border:none;}
+.history-card{background:#fff;margin:15px;padding:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.history-card p{margin:6px 0;font-size:14px;color:#333;}
 </style>
 </head>
 <body>
 
-<header>
-  <a href="index.html" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
-  <h1>Stake History</h1>
-  <div></div>
-</header>
+<div class="header">
+  <button class="back-btn" onclick="goBack()">Back</button>
+  Claim & Withdrawal History
+</div>
 
-<div class="container">
-  <table id="historyTable">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Type</th>
-        <th>Amount</th>
-        <th>Fee</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
-    </tbody>
-  </table>
+<div id="historyContainer">
+  <p>Loading history...</p>
 </div>
 
 <script>
 const CONTRACT_ADDRESS = "0x9fd473975cecd4587d78eb71f4498dde778c4b83";
-
-// ✅ Short ABI with only events we need
-const ABI = [
-  "event Staked(address indexed user, uint256 stakeIndex, uint256 amount, address indexed referrer)",
+const ABI = [ 
   "event RewardClaimed(address indexed user, uint256 amountNet, uint256 fee)",
   "event PrincipalWithdrawn(address indexed user, uint256 stakeIndex, uint256 amount, uint256 fee)"
 ];
 
 let provider, signer, contract, userAddress;
 
-async function loadHistoryForConnectedWallet() {
-  if (!window.ethereum) {
-    alert("Ethereum wallet not found. Install MetaMask.");
-    return;
+async function loadHistory() {
+  if (window.ethereum) {
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    userAddress = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+    fetchHistory();
+  } else {
+    document.getElementById("historyContainer").innerHTML = "<p>Wallet not detected. Please connect from main DApp.</p>";
   }
-  provider = new ethers.providers.Web3Provider(window.ethereum);
-  signer = provider.getSigner();
-  userAddress = await signer.getAddress(); // auto connected wallet
-  contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-  fetchHistory();
 }
 
 async function fetchHistory() {
-  const tableBody = document.querySelector("#historyTable tbody");
-  tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>`;
-
   try {
-    const filterStake = contract.filters.Staked(userAddress);
-    const filterClaim = contract.filters.RewardClaimed(userAddress);
-    const filterWithdraw = contract.filters.PrincipalWithdrawn(userAddress);
+    const container = document.getElementById("historyContainer");
+    container.innerHTML = "";
 
-    const [stakeEvents, claimEvents, withdrawEvents] = await Promise.all([
-      contract.queryFilter(filterStake),
-      contract.queryFilter(filterClaim),
-      contract.queryFilter(filterWithdraw)
-    ]);
+    // RewardClaimed events
+    const rewardFilter = contract.filters.RewardClaimed(userAddress);
+    const rewardEvents = await contract.queryFilter(rewardFilter, 0, "latest");
 
-    const allEvents = [];
+    // PrincipalWithdrawn events
+    const withdrawFilter = contract.filters.PrincipalWithdrawn(userAddress);
+    const withdrawEvents = await contract.queryFilter(withdrawFilter, 0, "latest");
 
-    // fetch block timestamps for each event
-    const allEventBlocks = [...stakeEvents, ...claimEvents, ...withdrawEvents].map(e => e.blockNumber);
-    const uniqueBlocks = [...new Set(allEventBlocks)];
-    const blockTimestamps = {};
-    await Promise.all(uniqueBlocks.map(async blk => {
-      const block = await provider.getBlock(blk);
-      blockTimestamps[blk] = block.timestamp;
-    }));
-
-    stakeEvents.forEach(e => allEvents.push({
-      type:'Stake',
-      amount:ethers.utils.formatEther(e.args.amount),
-      fee:'0',
-      date:new Date(blockTimestamps[e.blockNumber]*1000)
-    }));
-
-    claimEvents.forEach(e => allEvents.push({
-      type:'Claim',
-      amount:ethers.utils.formatEther(e.args.amountNet),
-      fee:ethers.utils.formatEther(e.args.fee),
-      date:new Date(blockTimestamps[e.blockNumber]*1000)
-    }));
-
-    withdrawEvents.forEach(e => allEvents.push({
-      type:'Withdraw',
-      amount:ethers.utils.formatEther(e.args.amount),
-      fee:ethers.utils.formatEther(e.args.fee),
-      date:new Date(blockTimestamps[e.blockNumber]*1000)
-    }));
-
-    allEvents.sort((a,b)=>b.date-a.date);
-
-    if(allEvents.length===0){
-      tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No history found.</td></tr>`;
+    if(rewardEvents.length === 0 && withdrawEvents.length === 0){
+      container.innerHTML = "<p>No history found.</p>";
       return;
     }
 
-    tableBody.innerHTML = '';
-    allEvents.forEach((e,i)=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${i+1}</td>
-        <td>${e.type}</td>
-        <td>${parseFloat(e.amount).toFixed(4)} <span class="token-name">Navaa</span></td>
-        <td>${parseFloat(e.fee).toFixed(4)}</td>
-        <td>${e.date.toLocaleString()}</td>
-      `;
-      tableBody.appendChild(tr);
-    });
+    // Merge events by block timestamp
+    const allEvents = [];
+    for(const e of rewardEvents){
+      const block = await provider.getBlock(e.blockNumber);
+      allEvents.push({
+        type:"RewardClaimed",
+        stakeIndex:null,
+        amount:ethers.utils.formatEther(e.args.amountNet),
+        fee:ethers.utils.formatEther(e.args.fee),
+        timestamp:new Date(block.timestamp*1000).toLocaleString()
+      });
+    }
+    for(const e of withdrawEvents){
+      const block = await provider.getBlock(e.blockNumber);
+      allEvents.push({
+        type:"PrincipalWithdrawn",
+        stakeIndex:e.args.stakeIndex.toString(),
+        amount:ethers.utils.formatEther(e.args.amount),
+        fee:ethers.utils.formatEther(e.args.fee),
+        timestamp:new Date(block.timestamp*1000).toLocaleString()
+      });
+    }
 
-  } catch(err){
-    console.error(err);
-    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Error loading history</td></tr>`;
+    // Sort by timestamp descending
+    allEvents.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+
+    // Display
+    for(const ev of allEvents){
+      container.innerHTML += `
+        <div class="history-card">
+          <p><b>${ev.type}</b></p>
+          ${ev.stakeIndex!==null?`<p>Stake #: ${ev.stakeIndex}</p>`:""}
+          <p>Amount Received: ${ev.amount} Navaa</p>
+          <p>Fee Deducted: ${ev.fee} Navaa</p>
+          <p>Time: ${ev.timestamp}</p>
+        </div>
+      `;
+    }
+
+  } catch(err){ 
+    console.error(err); 
+    document.getElementById("historyContainer").innerHTML="<p>Error loading history.</p>"; 
   }
 }
 
-// auto load for already connected wallet
-loadHistoryForConnectedWallet();
-</script>
+function goBack(){ window.location.href="index.html"; }
 
+loadHistory();
+</script>
 </body>
 </html>
-
